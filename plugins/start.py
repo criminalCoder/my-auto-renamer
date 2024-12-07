@@ -171,9 +171,10 @@ def extract_title(file_name):
         return "Unknown Title"
     
 # Renaming logic
-def rename_file(file_name):
+def rename_file(file_name, title):
     season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec = extract_details(file_name)
-    n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
+    n_title = title if title is not None else ""  # Placeholder for extracting title (can enhance this further)
+    # n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
     
     n_season = f"{season} •" if season is not None else ""
     n_episode = f"{episode} •" if episode is not None else ""
@@ -211,15 +212,14 @@ async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     try:
-        title = message.text
+        title = message.caption
         # caption = file.caption
         print(f"title => {title}")
         print(f"file => {file}")
-        # print(f"caption => {caption}")
     except Exception as e:
         print(e)
         pass
-    new_file_name = rename_file(filename)
+    new_file_name = rename_file(filename, title)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

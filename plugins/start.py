@@ -16,61 +16,115 @@ from config import START_PIC, FLOOD, ADMIN
 # ===========================================================================
 
 import re
-import requests
 
-TMDB_API_KEY = "3c3c555373fb569efa022af1ed58f4c8"
+# Example file names
+# file_names = [
+#     "MySeries S101E205 1080p WEB-DL Eng-Hin.mkv",
+#     "MySeries S102E301 720p BluRay Jpn-Eng.mkv",
+#     "MySeries S99E203 480p HDRip Hin-Jpn.mkv",
+#     "MySeries S01E01-02 4K WebRip Eng.mkv",
+#     "MySeries S01E00 Special 1080p Eng.mkv",
+#     "MySeries.mkv"
+# ]
 
-def extract_movie_name(filename):
-    """
-    Extracts a clean movie name and year from the filename.
-    """
-    # Try to extract "Movie Name (Year)"
-    match = re.search(r"([a-zA-Z\s]+)\((\d{4})\)", filename)
-    if match:
-        return match.group(1).strip() + " (" + match.group(2) + ")"
-    
-    # Clean up filename if no exact match
-    filename = re.sub(r"[\[\]\(\)\-_\.\@\d+pHEVC|HDRip|AAC|x\d+|Subs|Series|Movies|Hindi|English|x\d+|BluRay|WEB|MKV|MP4]", " ", filename, flags=re.IGNORECASE)
-    filename = re.sub(r"\s+", " ", filename).strip()
-    return filename
+# Mappings
+resolutions = {
+    "480p": "480p",
+    "720p": "720p",
+    "1080p": "1080p",
+    "4k": "4K UHD",
+}
 
-def search_tmdb(movie_name):
-    """
-    Searches TMDb for the given movie name and returns the top result.
-    """
-    url = f"https://api.themoviedb.org/3/search/movie"
-    params = {
-        "api_key": TMDB_API_KEY,
-        "query": movie_name,
-        "include_adult": False,
-    }
-    response = requests.get(url, params=params)
-    
-    if response.status_code != 200:
-        return f"Error: Unable to reach TMDb (status code: {response.status_code})"
-    
-    data = response.json()
-    if data.get("results"):
-        top_result = data["results"][0]
-        title = top_result.get("title", "Unknown Title")
-        release_date = top_result.get("release_date", "Unknown Date")
-        year = release_date.split("-")[0] if release_date else "Unknown Year"
-        return f"{title} ({year})"
-    
-    return "Movie not found on TMDb."
+languages = {
+    "eng": "English",
+    "hin": "Hindi",
+    "jpn": "Japanese",
+    "tamil": "Tamil",
+    "telugu": "Telugu",
+}
 
-@Client.on_message(filters.private & filters.document)
-async def handle_file(client, message: Message):
-    """
-    Handles file uploads in private chat. Extracts the movie name and searches TMDb.
-    """
-    file_name = message.document.file_name
-    movie_name = extract_movie_name(file_name)
+qualities = {
+    "webdl": "WEB-DL",
+    "webrip": "WebRip",
+    "hdrip": "HDRip",
+    "bluray": "BluRay",
+}
+
+# Updated regex patterns
+season_regex = r"S(\d{1,3})"
+episode_regex = r"E(\d{1,3})"
+multi_episode_regex = r"E(\d{1,3})-(\d{1,3})"
+special_episode_regex = r"S(\d{1,3})E00"
+
+# Function to extract season, episode, resolution, quality, and languages
+def extract_details(file_name):
+    # Season and Episode
+    season_match = re.search(season_regex, file_name, re.IGNORECASE)
+    multi_episode_match = re.search(multi_episode_regex, file_name, re.IGNORECASE)
+    episode_match = re.search(episode_regex, file_name, re.IGNORECASE)
+    special_match = re.search(special_episode_regex, file_name, re.IGNORECASE)
+
+    season = f"S{int(season_match.group(1)):02}" if season_match else None
+    if multi_episode_match:
+        episode = f"E{int(multi_episode_match.group(1)):02}-E{int(multi_episode_match.group(2)):02}"
+    elif special_match:
+        episode = "Special"
+    elif episode_match:
+        episode = f"E{int(episode_match.group(1)):02}"
+    else:
+        episode = None
+
+    # Resolution
+    resolution = None
+    for key in resolutions:
+        if key in file_name.lower():
+            resolution = resolutions[key]
+            break
+
+    # Quality
+    quality = None
+    for key in qualities:
+        if key.lower() in file_name.lower():
+            quality = qualities[key]
+            break
+
+    # Languages
+    detected_languages = []
+    for key in languages:
+        if key in file_name.lower():
+            detected_languages.append(languages[key])
+    languages_list = "-".join(detected_languages) if detected_languages else None
+
+    return season, episode, resolution, quality, languages_list
+
+# Renaming logic
+def rename_file(file_name):
+    season, episode, resolution, quality, languages_list = extract_details(file_name)
+    title = "MySeries"  # Placeholder for extracting title (can enhance this further)
     
-    await message.reply_text(f"Searching TMDb for: {movie_name}...")
+    new_name_parts = []
+    if season:
+        new_name_parts.append(season)
+    if episode:
+        new_name_parts.append(episode)
+    new_name_parts.append(title)
+    if resolution:
+        new_name_parts.append(resolution)
+    if quality:
+        new_name_parts.append(quality)
+    if languages_list:
+        new_name_parts.append(languages_list)
+    new_name_parts.append(file_name.split('.')[-1])  # Keep the file extension
     
-    tmdb_title = search_tmdb(movie_name)
-    await message.reply_text(f"Original Title from TMDb: {tmdb_title}")
+    new_name = " • ".join(new_name_parts).strip()
+    return new_name
+
+@Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
+async def auto_rename(client, message):
+    file = getattr(message, message.media.value)
+    filename = file.file_name
+    new_file_name = rename_file(filename)
+    await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 
 

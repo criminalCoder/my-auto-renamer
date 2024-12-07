@@ -91,8 +91,9 @@ season_regex = r"S(\d{1,3})"
 episode_regex = r"E(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
-multi_episode_regex = r"E(\d{1,3})\s*[-]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex = r"E(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
+complete_regex = r"Complete"  # Detects the word "Complete"
 
 # Function to extract season, episode, resolution, quality, and languages
 def extract_details(file_name):
@@ -101,7 +102,9 @@ def extract_details(file_name):
     multi_episode_match = re.search(multi_episode_regex, file_name, re.IGNORECASE)
     episode_match = re.search(episode_regex, file_name, re.IGNORECASE)
     special_match = re.search(special_episode_regex, file_name, re.IGNORECASE)
+    complete_match = re.search(complete_regex, file_name, re.IGNORECASE)  # Case-insensitive matching for "Complete"
 
+    # getting values
     season = f"S{int(season_match.group(1)):02}" if season_match else None
     full_season = f"Season {int(season_match.group(1)):02}" if season_match else None
     if multi_episode_match:
@@ -117,6 +120,12 @@ def extract_details(file_name):
     else:
         episode = None
         fullepisode = None
+    
+    complete = None
+    if (season or episode) and complete_match:
+        # "Complete" should appear after season or episode information
+        if file_name.lower().find('complete') > (file_name.lower().find(season) if season else file_name.lower().find(episode)):
+            complete = "Complete"
 
     # Resolution
     resolution = None
@@ -161,21 +170,13 @@ def extract_details(file_name):
 
     languages_list = "-".join(detected_languages) if detected_languages else None
 
-    return season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec
+    return season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete
 
-def extract_title(file_name):
-    # Extract the title (e.g., Maeri)
-    title_match = re.search(r"([A-Za-z0-9\s]+)", file_name)
-    
-    if title_match:
-        title = title_match.group(1).strip()
-        return title
-    else:
-        return "Unknown Title"
+
     
 # Renaming logic
 def rename_file(file_name, title):
-    season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec = extract_details(file_name)
+    season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete = extract_details(file_name)
     n_title = title if title is not None else ""  # Placeholder for extracting title (can enhance this further)
     # n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
     
@@ -188,8 +189,8 @@ def rename_file(file_name, title):
     n_fullseason = f"[{full_season}]" if full_season is not None else ""
     n_subtitle = f"{subtitle}" if subtitle is not None else ""
     n_codec = f"{codec}" if codec is not None else ""
-
-    new_name = f"{n_season} {n_episode} {n_title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
+    n_complete = f"{complete} •" if complete is not None else ""
+    new_name = f"{n_season} {n_complete} {n_episode} {n_title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
     return new_name
 
 

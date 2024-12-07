@@ -71,6 +71,7 @@ qualities = {
     "PreDvd": "PreDvd",
 
 }
+
 subtitles = {
     "esubs": "ESub",
     "esub": "ESub",
@@ -88,7 +89,9 @@ codecs = {
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
 episode_regex = r"E(\d{1,3})"
-multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
+# multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
+# multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
+multi_episode_regex = r"E(\d{1,3})\s*[-]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
 
 # Function to extract season, episode, resolution, quality, and languages

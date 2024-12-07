@@ -17,43 +17,76 @@ from config import START_PIC, FLOOD, ADMIN
 
 import re
 
-# Example file names
-# file_names = [
-#     "MySeries S101E205 1080p WEB-DL Eng-Hin.mkv",
-#     "MySeries S102E301 720p BluRay Jpn-Eng.mkv",
-#     "MySeries S99E203 480p HDRip Hin-Jpn.mkv",
-#     "MySeries S01E01-02 4K WebRip Eng.mkv",
-#     "MySeries S01E00 Special 1080p Eng.mkv",
-#     "MySeries.mkv"
-# ]
 
 # Mappings
 resolutions = {
+    "144p": "144p",
+    "240p": "240p",
+    "360p": "360p",
     "480p": "480p",
+    "520p": "520p",
+    "640p": "640p",
     "720p": "720p",
     "1080p": "1080p",
+    "1440p": "1440p",
+    "2160p": "2160p",
+    "4320p": "4320p",
     "4k": "4K UHD",
 }
 
 languages = {
-    "eng": "English",
-    "hin": "Hindi",
-    "jpn": "Japanese",
-    "tamil": "Tamil",
-    "telugu": "Telugu",
+    "HIN": "Hindi",
+    "ENG": "English",
+    "TAM": "Tamil",
+    "TEL": "Telugu",
+    "MAY": "Malayalam",
+    "PAN": "Punjabi",
+    "SPA": "Spanish",
+    "FRE": "French",
+    "GER": "German",
+    "CHN": "Chinese",
+    "JPN": "Japanese",
+    "KOR": "Korean",
+    "RUS": "Russian",
+    "ARA": "Arabic",
+    "POR": "Portuguese",
+    "ITA": "Italian",
+    "BEN": "Bengali",
+    "URD": "Urdu",
+    "TUR": "Turkish",
+    "THA": "Thai",
+    "VIE": "Vietnamese"
 }
+
 
 qualities = {
-    "webdl": "WEB-DL",
-    "webrip": "WebRip",
-    "hdrip": "HDRip",
-    "bluray": "BluRay",
+    "BLURAY": "BluRay",
+    "WEB-DL": "WEB-DL",
+    "WEBRIP": "WEBRip",
+    "HDRIP": "HDRip",
+    "DVDRIP": "DVDRip",
+    "HDTV": "HDTV",
+    "HDTS": "HDTS",
+    "CamRip": "CamRip",
+    "PreDvd": "PreDvd",
+
+}
+subtitles = {
+    "esubs": "ESubs",
+    "hsubs": "HSubs"
 }
 
+codecs = {
+    "H.264": "AVC",
+    "AVC": "AVC",
+    "H.265": "HEVC",
+    "HEVC": "HEVC",
+    "10bit HEVC": "10Bit HEVC"
+}
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
 episode_regex = r"E(\d{1,3})"
-multi_episode_regex = r"E(\d{1,3})-(\d{1,3})"
+multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
 special_episode_regex = r"S(\d{1,3})E00"
 
 # Function to extract season, episode, resolution, quality, and languages
@@ -65,21 +98,35 @@ def extract_details(file_name):
     special_match = re.search(special_episode_regex, file_name, re.IGNORECASE)
 
     season = f"S{int(season_match.group(1)):02}" if season_match else None
+    full_season = f"Season {int(season_match.group(1)):02}" if season_match else None
     if multi_episode_match:
-        episode = f"E{int(multi_episode_match.group(1)):02}-E{int(multi_episode_match.group(2)):02}"
+        episode = f"E{int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
+        fullepisode = f"Episode {int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
     elif special_match:
         episode = "Special"
+        fullepisode = "Special Episode"
+
     elif episode_match:
         episode = f"E{int(episode_match.group(1)):02}"
+        fullepisode = f"Episode {int(episode_match.group(1)):02}"
     else:
         episode = None
+        fullepisode = None
 
     # Resolution
     resolution = None
     for key in resolutions:
-        if key in file_name.lower():
+        if key.lower() in file_name.lower():
             resolution = resolutions[key]
             break
+    
+    # codec
+    codec = None 
+    for key in codecs:
+        if key.lower() in file_name.lower():
+            codec = codecs[key]
+            if key.lower() == "h.265" or key.lower() == "hevc":
+                break
 
     # Quality
     quality = None
@@ -87,43 +134,72 @@ def extract_details(file_name):
         if key.lower() in file_name.lower():
             quality = qualities[key]
             break
+    
+    #subtitle
+    subtitle = None
+    for key in subtitles:
+        if key.lower() in file_name.lower():
+            subtitle = subtitles[key]
+            break
 
     # Languages
     detected_languages = []
     for key in languages:
-        if key in file_name.lower():
-            detected_languages.append(languages[key])
+        if key.lower() in file_name.lower():
+            language_name = languages[key]
+            if "fandub" in file_name.lower():
+                language_name += "(fanDub)"
+            elif "org" in file_name.lower():
+                language_name += "(ORG)"
+
+            detected_languages.append(language_name)
+
     languages_list = "-".join(detected_languages) if detected_languages else None
 
-    return season, episode, resolution, quality, languages_list
+    return season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec
 
 # Renaming logic
-def rename_file(file_name):
-    season, episode, resolution, quality, languages_list = extract_details(file_name)
-    title = "MySeries"  # Placeholder for extracting title (can enhance this further)
+def rename_file(file_name, title):
+    season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec = extract_details(file_name)
+    n_title = title   # Placeholder for extracting title (can enhance this further)
     
-    new_name_parts = []
-    if season:
-        new_name_parts.append(season)
-    if episode:
-        new_name_parts.append(episode)
-    new_name_parts.append(title)
-    if resolution:
-        new_name_parts.append(resolution)
-    if quality:
-        new_name_parts.append(quality)
-    if languages_list:
-        new_name_parts.append(languages_list)
-    new_name_parts.append(file_name.split('.')[-1])  # Keep the file extension
-    
-    new_name = " • ".join(new_name_parts).strip()
+    n_season = f"{season} •" if season is not None else ""
+    n_episode = f"{episode} •" if episode is not None else ""
+    n_fullepisode = f"{fullepisode}" if fullepisode is not None else ""
+    n_resolution = f"{resolution}" if resolution is not None else ""
+    n_quality = f"{quality}" if quality is not None else ""
+    n_languages = f"[{languages_list}]" if languages_list is not None else ""
+    n_fullseason = f"{full_season}" if full_season is not None else ""
+    n_subtitle = f"{subtitle}" if subtitle is not None else ""
+    n_codec = f"{codec}" if codec is not None else ""
+
+    new_name = f"{n_season} {n_episode} {title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
     return new_name
+
+
+    # new_name_parts = []
+    # if season:
+    #     new_name_parts.append(season)
+    # if episode:
+    #     new_name_parts.append(episode)
+    # new_name_parts.append(title)
+    # if resolution:
+    #     new_name_parts.append(resolution)
+    # if quality:
+    #     new_name_parts.append(quality)
+    # if languages_list:
+    #     new_name_parts.append(languages_list)
+    # new_name_parts.append(file_name.split('.')[-1])  # Keep the file extension
+    
+    # new_name = f"{season if season} • ".join(new_name_parts).strip()
+    # return new_name
 
 @Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
 async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
-    new_file_name = rename_file(filename)
+    title = message.text
+    new_file_name = rename_file(filename, title)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

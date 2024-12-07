@@ -72,8 +72,10 @@ qualities = {
 
 }
 subtitles = {
-    "esubs": "ESubs",
-    "hsubs": "HSubs"
+    "esubs": "ESub",
+    "esub": "ESub",
+    "hsubs": "HSub",
+    "hsub": "HSub"
 }
 
 codecs = {
@@ -158,22 +160,32 @@ def extract_details(file_name):
 
     return season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec
 
+def extract_title(file_name):
+    # Extract the title (e.g., Maeri)
+    title_match = re.search(r"([A-Za-z0-9\s]+)", file_name)
+    
+    if title_match:
+        title = title_match.group(1).strip()
+        return title
+    else:
+        return "Unknown Title"
+    
 # Renaming logic
-def rename_file(file_name, title):
+def rename_file(file_name):
     season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec = extract_details(file_name)
-    n_title = title   # Placeholder for extracting title (can enhance this further)
+    n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
     
     n_season = f"{season} •" if season is not None else ""
     n_episode = f"{episode} •" if episode is not None else ""
-    n_fullepisode = f"{fullepisode}" if fullepisode is not None else ""
+    n_fullepisode = f"[{fullepisode}]" if fullepisode is not None else ""
     n_resolution = f"{resolution}" if resolution is not None else ""
     n_quality = f"{quality}" if quality is not None else ""
     n_languages = f"[{languages_list}]" if languages_list is not None else ""
-    n_fullseason = f"{full_season}" if full_season is not None else ""
+    n_fullseason = f"[{full_season}]" if full_season is not None else ""
     n_subtitle = f"{subtitle}" if subtitle is not None else ""
     n_codec = f"{codec}" if codec is not None else ""
 
-    new_name = f"{n_season} {n_episode} {title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
+    new_name = f"{n_season} {n_episode} {n_title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
     return new_name
 
 
@@ -198,8 +210,15 @@ def rename_file(file_name, title):
 async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
-    title = message.text
-    new_file_name = rename_file(filename, title)
+    try:
+        title = message.text
+        caption = file.caption
+        print(f"title => {title}")
+        print(f"caption => {caption}")
+    except Exception as e:
+        print(e)
+        pass
+    new_file_name = rename_file(filename)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

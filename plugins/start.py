@@ -212,9 +212,10 @@ async def auto_rename(client, message):
     filename = file.file_name
     try:
         title = message.text
-        caption = file.caption
+        # caption = file.caption
         print(f"title => {title}")
-        print(f"caption => {caption}")
+        print(f"file => {file}")
+        # print(f"caption => {caption}")
     except Exception as e:
         print(e)
         pass

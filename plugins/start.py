@@ -214,7 +214,7 @@ async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     title = message.caption
-    reply_to_message = await message.reply_text(f"Just wait for a while, your file is being ready to rename...", reply_to_message_id=message.reply_to_message.id)
+    await message.reply(f"Just wait for a while, your file is being ready to rename...")
     if await is_webseries(filename):
         new_file_name = await rename_file(filename, title)
         # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp

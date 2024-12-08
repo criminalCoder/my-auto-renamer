@@ -90,8 +90,8 @@ season_regex = r"S(\d{1,3})"
 episode_regex = r"(E|\bEP)(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
-multi_episode_regex = r"(?:\bEP|E)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
-# multi_episode_regex = r"(?:E|\bEP)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+# multi_episode_regex = r"(?:\bEP|E)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
+multi_episode_regex = r"(?:EP|\bE)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
 complete_regex = r"Complete"  # Detects the word "Complete"
 
@@ -219,6 +219,12 @@ async def auto_rename(client, message):
     if await is_webseries(filename):
         print("Detected webseries")
         new_file_name = await rename_file(filename, title)
+        if not "." in new_file_name:
+          if "." in file.file_name:
+              extn = file.file_name.rsplit('.', 1)[-1]
+          else:
+              extn = "mkv"
+          new_lazy_name = new_lazy_name + "." + extn
         # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp
         # update = CallbackQuery(
         #         id=unique_id,  # Unique ID for the callback
@@ -228,7 +234,7 @@ async def auto_rename(client, message):
         #         data=f"upload_video",  # Mimic callback data
         #     )
         # await lazydevelopertaskmanager(client, update, new_file_name)
-        await lazydevelopertaskmanager(client, message, new_file_name, file)
+        await lazydevelopertaskmanager(client, message, new_lazy_name, file)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

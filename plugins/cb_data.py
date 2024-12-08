@@ -47,11 +47,11 @@ def get_manager():
     return handler
 
 
-@Client.on_callback_query(filters.regex("upload"))
-async def lazydevelopertaskmanager(bot, update):
+# @Client.on_callback_query(filters.regex("upload"))
+async def lazydevelopertaskmanager(bot, message, new_file_name, file):
     try:
-        user_id = update.from_user.id
-
+        user_id = message.from_user.id
+        ok = await message.reply("Initiating task......")
         # Initialize user-specific task tracking if not present
         if user_id not in user_tasks:
             user_tasks[user_id] = {
@@ -61,9 +61,9 @@ async def lazydevelopertaskmanager(bot, update):
             user_locks[user_id] = Lock()  # Lock for managing task execution
 
         task_data = {
-            "update": update,
-            "type": update.data.split("_")[1],
-            "new_name": update.message.text.split(":-")[1],
+            "update": message,
+            "type": "video",
+            "new_name": new_file_name,
         }
 
         # Manage task execution
@@ -71,26 +71,26 @@ async def lazydevelopertaskmanager(bot, update):
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await update.message.edit("🔄 Task is in the queue. It will start soon. ⏳")
+                await ok.edit("🔄 Task is in the queue. It will start soon. ⏳")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
-                create_task(process_task(bot, user_id, task_data))  # Start task in background
+                create_task(process_task(bot, user_id, task_data, file))  # Start task in background
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
-async def process_task(bot, user_id, task_data):
+async def process_task(bot, user_id, task_data, file):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
         print(f"task for user id {update.from_user.id}")
-        manager(update.from_user.id, True)
-        type = update.data.split("_")[1]
-        user_id = int(update.message.chat.id)
+        manager(user_id, True)
+        type = task_data["type"]
+        # user_id = int(update.message.chat.id)
         # new_name = update.message.text
         new_filename = new_name
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
-        file = update.message.reply_to_message
+        # file = update.message.reply_to_message
         # org_file = file
         ms = await update.message.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
         c_time = time.time()

@@ -7,9 +7,8 @@ import random
 from helpo.txt import mr
 from helpo.database import db
 from config import START_PIC, FLOOD, ADMIN 
-
-
-
+from plugins.cb_data import lazydevelopertaskmanager
+import time
 # ===========================================================================
 # ===========================================================================
                     ### AUTO RENAME = STEP 1
@@ -88,15 +87,15 @@ codecs = {
 }
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
-episode_regex = r"E(\d{1,3})"
+episode_regex = r"(E|\bEP)(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
-multi_episode_regex = r"E(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex = r"(E|\bEP)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
 complete_regex = r"Complete"  # Detects the word "Complete"
 
 # Function to extract season, episode, resolution, quality, and languages
-def extract_details(file_name):
+async def extract_details(file_name):
     # Season and Episode
     season_match = re.search(season_regex, file_name, re.IGNORECASE)
     multi_episode_match = re.search(multi_episode_regex, file_name, re.IGNORECASE)
@@ -175,8 +174,8 @@ def extract_details(file_name):
 
     
 # Renaming logic
-def rename_file(file_name, title):
-    season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete = extract_details(file_name)
+async def rename_file(file_name, title):
+    season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete = await extract_details(file_name)
     n_title = title if title is not None else ""  # Placeholder for extracting title (can enhance this further)
     # n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
     
@@ -193,37 +192,41 @@ def rename_file(file_name, title):
     new_name = f"{n_season} {n_complete} {n_episode} {n_title} {n_fullseason} {n_fullepisode} {n_resolution} {n_codec} {n_quality} {n_languages} {n_subtitle}"
     return new_name
 
+async def is_webseries(file_name):
+    # Patterns to match web series characteristics
+    season_regex = r"S(\d{1,3})"  # Matches season numbers like "S01"
+    episode_regex = r"(EP|\bE)(\d{1,3})"  # Matches episode numbers like "E01"
+    # complete_regex = r"Complete"  # Detects the word "Complete"
+    season_keyword_regex = r"Season\s*\d{1,3}"  # Matches "Season 1", "Season01", etc.
 
-    # new_name_parts = []
-    # if season:
-    #     new_name_parts.append(season)
-    # if episode:
-    #     new_name_parts.append(episode)
-    # new_name_parts.append(title)
-    # if resolution:
-    #     new_name_parts.append(resolution)
-    # if quality:
-    #     new_name_parts.append(quality)
-    # if languages_list:
-    #     new_name_parts.append(languages_list)
-    # new_name_parts.append(file_name.split('.')[-1])  # Keep the file extension
-    
-    # new_name = f"{season if season} • ".join(new_name_parts).strip()
-    # return new_name
+    # Check for any match
+    if (
+        re.search(season_regex, file_name, re.IGNORECASE) or
+        re.search(episode_regex, file_name, re.IGNORECASE) or
+        # re.search(complete_regex, file_name, re.IGNORECASE) or
+        re.search(season_keyword_regex, file_name, re.IGNORECASE)
+    ):
+        return True  # File is part of a web series
+    return False  # Not a web series file
 
 @Client.on_message(filters.private & (filters.document | filters.audio | filters.video))
 async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
-    try:
-        title = message.caption
-        # caption = file.caption
-        print(f"title => {title}")
-        print(f"file => {file}")
-    except Exception as e:
-        print(e)
-        pass
-    new_file_name = rename_file(filename, title)
+    title = message.caption
+    reply_to_message = await message.reply_text(f"Just wait for a while, your file is being ready to rename...", reply_to_message_id=message.reply_to_message.id)
+    if await is_webseries(filename):
+        new_file_name = await rename_file(filename, title)
+        # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp
+        # update = CallbackQuery(
+        #         id=unique_id,  # Unique ID for the callback
+        #         from_user=message.from_user,  # User initiating the message
+        #         message=message,  # Original message
+        #         message=message,  # Original message
+        #         data=f"upload_video",  # Mimic callback data
+        #     )
+        # await lazydevelopertaskmanager(client, update, new_file_name)
+        await lazydevelopertaskmanager(client, message, new_file_name, file)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

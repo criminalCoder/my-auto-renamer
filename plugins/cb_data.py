@@ -94,8 +94,9 @@ async def process_task(bot, user_id, task_data, file, nehu):
         # org_file = file
         ms = await nehu.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
         c_time = time.time()
+        file_id = file.file_id
         try:
-            path = await file.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
         except Exception as e:
             return await ms.edit(e)
         duration = 0

@@ -240,9 +240,9 @@ async def auto_rename(client, message):
                     extn = file.file_name.rsplit('.', 1)[-1]
                 else:
                     extn = "mkv"
-            new_lazy_name = new_file_name + "@real_MoviesAdda6." + extn
+            new_lazy_name = new_file_name + " @real_MoviesAdda6." + extn
         except Exception as e:
-            new_lazy_name = new_file_name + "@real_MoviesAdda6.mkv"
+            new_lazy_name = new_file_name + " @real_MoviesAdda6.mkv"
             print(e)
             pass
 

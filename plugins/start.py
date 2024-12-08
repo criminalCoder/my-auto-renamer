@@ -90,7 +90,8 @@ season_regex = r"S(\d{1,3})"
 episode_regex = r"(E|\bEP)(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
-multi_episode_regex = r"(E|\bEP)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex = r"(?:E|\bEP)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
+# multi_episode_regex = r"(?:E|\bEP)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
 complete_regex = r"Complete"  # Detects the word "Complete"
 
@@ -216,6 +217,7 @@ async def auto_rename(client, message):
     title = message.caption
     await message.reply(f"Just wait for a while, your file is being ready to rename...")
     if await is_webseries(filename):
+        print("Detected webseries")
         new_file_name = await rename_file(filename, title)
         # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp
         # update = CallbackQuery(

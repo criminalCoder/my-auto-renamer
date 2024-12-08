@@ -92,7 +92,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
         
         try:
-            file = update.reply_to_message
+            filez = update.reply_to_message_id
             print(file)
         except Exception as lazyerror:
             print(lazyerror)
@@ -107,7 +107,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
             print("No media found to preocess...")
             # return await update.reply("No media file found to process.")
         try:
-            path = await file.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            path = await filez.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
             # path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
         except Exception as e:
             return await ms.edit(e)

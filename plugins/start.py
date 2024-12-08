@@ -91,7 +91,7 @@ episode_regex = r"(E|\bEP)(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
 # multi_episode_regex = r"(?:\bEP|E)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
-multi_episode_regex = r"(?:EP|\bE)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex = r"(?:\bEP|\bE)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
 special_episode_regex = r"S(\d{1,3})E00"
 complete_regex = r"Complete"  # Detects the word "Complete"
 
@@ -111,7 +111,7 @@ async def extract_details(file_name):
         episode = f"E{int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
         fullepisode = f"Episode {int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
     elif special_match:
-        episode = "Special"
+        episode = "Special-Ep"
         fullepisode = "Special Episode"
 
     elif episode_match:
@@ -158,12 +158,13 @@ async def extract_details(file_name):
 
     # Languages
     detected_languages = []
+    clean_file_name = re.sub(r"@[\w_]+", "", file_name)
     for key in languages:
-        if key.lower() in file_name.lower():
+        if key in clean_file_name.lower():
             language_name = languages[key]
-            if "fandub" in file_name.lower():
+            if "fandub" in clean_file_name.lower():
                 language_name += "(fanDub)"
-            elif "org" in file_name.lower():
+            elif "org" in clean_file_name.lower():
                 language_name += "(org)"
 
             detected_languages.append(language_name)
@@ -215,7 +216,7 @@ async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     title = message.caption
-    lazymsg = await message.reply(f"🤞 Let the magic begin... ❤")
+    lazymsg = await message.reply(f"🤞 ʟᴇᴛ ᴛʜᴇ ᴍᴀɢɪᴄ ʙᴇɢɪɴ... ❤")
     if await is_webseries(filename):
         # print("Detected webseries")
         new_file_name = await rename_file(filename, title)
@@ -225,14 +226,14 @@ async def auto_rename(client, message):
                     extn = file.file_name.rsplit('.', 1)[-1]
                 else:
                     extn = "mkv"
-                new_lazy_name = new_file_name + "." + extn
+            new_lazy_name = new_file_name + "." + extn
         except Exception as e:
             new_lazy_name = new_file_name + ".mkv"
             print(e)
             pass
 
         await lazydevelopertaskmanager(client, message, new_lazy_name, file, lazymsg)
-    await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
+    await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: <code>{new_lazy_name}</code>")
 
 
 

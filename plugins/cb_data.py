@@ -109,9 +109,9 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
         except:
             pass
         ph_path = None
-        print(f"Trying to get media |=> ")
+        # print(f"Trying to get media |=> ")
         media = getattr(update, update.media.value)
-        print(f" Got media |=> {media} ")
+        # print(f" Got media |=> {media} ")
         # media = file
         c_caption = await db.get_caption(update.chat.id)
         c_thumb = await db.get_thumbnail(update.chat.id)
@@ -124,7 +124,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                 return
         else:
             caption = f"**{new_filename}**"
-        print(f"Trying to get thumbnail")
+        # print(f"Trying to get thumbnail")
         if (media.thumbs or c_thumb):
             if c_thumb:
                 ph_path = await bot.download_media(c_thumb)
@@ -134,7 +134,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             img = Image.open(ph_path)
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
-        print(f"🤳 Got Thumbnail |=> ✅")
+        # print(f"🤳 Got Thumbnail |=> ✅")
         await ms.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....")
         c_time = time.time()
         try:

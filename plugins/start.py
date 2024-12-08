@@ -1,5 +1,5 @@
 from asyncio import sleep
-from pyrogram import Client, filters
+from pyrogram import Client, filters, enums
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ForceReply, CallbackQuery, Message
 from pyrogram.errors import FloodWait
 import humanize
@@ -87,7 +87,7 @@ codecs = {
 }
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
-episode_regex = r"(E|\bEP)(\d{1,3})"
+episode_regex = r"(?:\bEP|\bE)(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
 # multi_episode_regex = r"(?:\bEP|E)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
@@ -174,7 +174,7 @@ async def extract_details(file_name):
     return season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete
 
 
-    
+
 # Renaming logic
 async def rename_file(file_name, title):
     season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete = await extract_details(file_name)
@@ -216,7 +216,10 @@ async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     title = message.caption
-    lazymsg = await message.reply(f"🤞 ʟᴇᴛ ᴛʜᴇ ᴍᴀɢɪᴄ ʙᴇɢɪɴ... ❤")
+    if title is None:
+        return message.reply("😕 ᴘʟᴇᴀsᴇ ᴍᴀᴋᴇ sᴜʀᴇ ᴛʜᴀᴛ ʏᴏᴜ ʜᴀᴠᴇ ᴍᴇɴᴛɪᴏɴᴇᴅ sᴇʀɪᴇs ɴᴀᴍᴇ ɪɴ ғɪʟᴇ...")
+
+    lazymsg = await message.reply(f"<b>🤞 ʟᴇᴛ ᴛʜᴇ ᴍᴀɢɪᴄ ʙᴇɢɪɴ... ❤</b>", parse_mode=enums.ParseMode.HTML)
     if await is_webseries(filename):
         # print("Detected webseries")
         new_file_name = await rename_file(filename, title)
@@ -233,7 +236,11 @@ async def auto_rename(client, message):
             pass
 
         await lazydevelopertaskmanager(client, message, new_lazy_name, file, lazymsg)
-    await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: <code>{new_lazy_name}</code>")
+    await client.send_message(
+        chat_id=message.from_user.id, 
+        text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n</blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
+        parse_mode=enums.ParseMode.HTML
+        )
 
 
 

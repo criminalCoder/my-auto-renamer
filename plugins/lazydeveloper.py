@@ -364,10 +364,10 @@ async def rename(client, message):
     
     print(f'✅Set target chat => {target_chat_id}' )
     try:
-        chat_info = await client.get_chat(target_chat_id)
-        print(f"Got Chat info")
+        await client.get_chat(target_chat_id)
     except Exception as e:
-        await client.send_message(message.chat.id, f"Make Sure Bot is admin in Target Channel")
+        return await client.send_message(message.chat.id, f"Make Sure Bot is admin in Target Channel")
+        
         # print(f"Error accessing chat: {e}")
     # Handle the exception appropriately
 
@@ -376,8 +376,12 @@ async def rename(client, message):
         chat_id=message.chat.id
     )
     Forward = int(Forward.text)
-    print(f'🔥Set destination chat => {target_chat_id}' )
-
+    print(f'🔥Set destination chat => {Forward}' )
+    try:
+        await client.get_chat(target_chat_id)
+    except Exception as e:
+        return await client.send_message(message.chat.id, f"Make Sure Bot is admin in Forward DB Channel")
+       
     await db.set_forward(message.from_user.id, Forward)
     await db.set_lazy_target_chat_id(message.from_user.id, target_chat_id)
 

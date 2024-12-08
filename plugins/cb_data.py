@@ -51,7 +51,7 @@ def get_manager():
 async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
     try:
         user_id = message.from_user.id
-        await lazymsg.edit("Initiating task......")
+        await lazymsg.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
         # Initialize user-specific task tracking if not present
         if user_id not in user_tasks:
             user_tasks[user_id] = {
@@ -71,7 +71,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await lazymsg.edit("🔄 Task is in the queue. It will start soon. ⏳")
+                await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
@@ -88,7 +88,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
         type = task_data["type"]
         new_filename = new_name
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
-        ms = await lazymsg.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
+        ms = await lazymsg.edit("<b>⏳ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ...</b>")
         c_time = time.time()
          # Check if the message contains media (Video or Document)
         if not (update.video or update.document):
@@ -123,7 +123,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                 await ms.edit(text=f"Your caption Error unexpected keyword ●> ({e})")
                 return
         else:
-            caption = f"**{new_filename}**"
+            caption = f"{new_filename}"
         # print(f"Trying to get thumbnail")
         if (media.thumbs or c_thumb):
             if c_thumb:
@@ -135,7 +135,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
         # print(f"🤳 Got Thumbnail |=> ✅")
-        await ms.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....")
+        await ms.edit("⚡ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴜᴘʟᴏᴀᴅ...")
         c_time = time.time()
         try:
             # Attempt to retrieve the forward ID and target chat ID from the database
@@ -146,14 +146,14 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             if not forward_id or not lazy_target_chat_id:
                 await bot.send_message(
                     chat_id=update.chat.id,
-                    text="Sorry sweetheart, I'm an advanced version of the renamer bot.\n❌ Forward ID or target chat ID not set. Please configure them first. 💔"
+                    text="sᴏʀʀʏ sᴡᴇᴇᴛʜᴇᴀʀᴛ, ɪ'ᴍ ᴀɴ ᴀᴅᴠᴀɴᴄᴇᴅ ᴠᴇʀsɪᴏɴ ᴏꜰ ᴛʜᴇ ʀᴇɴᴀᴍᴇʀ ʙᴏᴛ.\n❌ ꜰᴏʀᴡᴀʀᴅ ɪᴅ ᴏʀ ᴛᴀʀɢᴇᴛ ᴄʜᴀᴛ ɪᴅ ɴᴏᴛ sᴇᴛ. ᴘʟᴇᴀsᴇ ᴄᴏɴꜰɪɢᴜʀᴇ ᴛʜᴇᴍ ꜰɪʀsᴛ. 💔"
                 )
                 return  # Stop further execution
         except Exception as e:
             print(f"Error retrieving IDs: {e}")
             await bot.send_message(
                 chat_id=update.chat.id,
-                text="❌ An error occurred while retrieving the configuration. Please try again later."
+                text="❌ ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ ᴡʜɪʟᴇ ʀᴇᴛʀɪᴇᴠɪɴɢ ᴛʜᴇ ᴄᴏɴꜰɪɢᴜʀᴀᴛɪᴏɴ. ᴘʟᴇᴀsᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ."
             )
             return  # Stop further execution
 
@@ -165,7 +165,8 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                    progress_args=(f"<b>==========x==========</b>⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀\n<b>==========x==========</b>\n<blockquote>{new_filename}</blockquote>", ms, c_time),
+                    parse_mode=enums.ParseMode.HTML
                 )
             elif type == "video":
                 suc = await bot.send_video(
@@ -175,7 +176,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", ms, c_time)
                 )
             elif type == "audio":
                 suc = await bot.send_audio(
@@ -185,10 +186,10 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", ms, c_time)
                 )
             try:
-                await ms.edit(f"❤--SMILE-PLEASE--❤")
+                await ms.edit(f"<b>❤--sᴍɪʟᴇ-ᴘʟᴇᴀsᴇ--❤<b>")
                 await asyncio.sleep(1)
                 await ms.delete()
                 sent = await suc.copy(forward_id)
@@ -214,7 +215,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             if not sessionstring or not apiid or not apihash:
                 missing_values = []
                 if not sessionstring:
-                    missing_values.append("session string")
+                    missing_values.append("SESSION STRING")
                 if not apiid:
                     missing_values.append("API ID")
                 if not apihash:
@@ -223,7 +224,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                 missing_fields = ", ".join(missing_values)
                 await bot.send_message(
                     chat_id=update.chat.id,
-                    text=f"⛔ Missing required information:<b> {missing_fields}. </b>\n\nPlease ensure you have set up all the required details in the database.",
+                    text=f"⛔ ᴍɪssɪɴɢ ʀᴇQᴜɪʀᴇᴅ ɪɴғᴏʀᴍᴀᴛɪᴏɴ:<b> {missing_fields}. </b>\n\nᴘʟᴇᴀsᴇ ᴇɴsᴜʀᴇ ʏᴏᴜ ʜᴀᴠᴇ sᴇᴛ ᴜᴘ ᴀʟʟ ᴛʜᴇ ʀᴇQᴜɪʀᴇᴅ ᴅᴇᴛᴀɪʟs ɪɴ ᴛʜᴇ ᴅᴀᴛᴀʙᴀsᴇ.",
                     parse_mode=enums.ParseMode.HTML
                 )
                 return  # Exit the function if values are missing
@@ -258,10 +259,10 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                         else:
                             await bot.send_message(
                                 update.from_user.id,
-                                f"❌ Skipped media with ID {msg.id}, Size greater than 2gb"
+                                f"👠 sᴋɪᴘᴘᴇᴅ ᴍᴇᴅɪᴀ ᴡɪᴛʜ ɪᴅ {msg.id}, sɪᴢᴇ ɢʀᴇᴀᴛᴇʀ ᴛʜᴀɴ 2ɢʙ"
                                 )
-                            skiped_lazy_files += 1
-                            print(f"❌ Skipped media with ID {msg.id}, Size greater than 2gb")
+                            # skiped_lazy_files += 1
+                            print(f"👠 Skipped media with ID {msg.id}, Size greater than 2gb")
                             await asyncio.sleep(1)
 
                     else:
@@ -270,7 +271,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
 
             except Exception as e:
                 print(f"Error occurred: {e}")
-                return await update.reply("❌ Failed to process messages.")
+                return await update.reply("❌ ꜰᴀɪʟᴇᴅ ᴛᴏ ᴘʀᴏᴄᴇss ᴍᴇssᴀɢᴇs 💔")
 
             # 
             # 

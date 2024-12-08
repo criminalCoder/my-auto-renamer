@@ -219,12 +219,17 @@ async def auto_rename(client, message):
     if await is_webseries(filename):
         print("Detected webseries")
         new_file_name = await rename_file(filename, title)
-        if not "." in new_file_name:
-          if "." in file.file_name:
-              extn = file.file_name.rsplit('.', 1)[-1]
-          else:
-              extn = "mkv"
-          new_lazy_name = new_lazy_name + "." + extn
+        try:
+            if not "." in new_file_name:
+                if "." in file.file_name:
+                    extn = file.file_name.rsplit('.', 1)[-1]
+                else:
+                    extn = "mkv"
+                new_lazy_name = new_file_name + "." + extn
+        except Exception as e:
+            new_lazy_name = new_file_name + ".mkv"
+            print(e)
+            pass
         # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp
         # update = CallbackQuery(
         #         id=unique_id,  # Unique ID for the callback

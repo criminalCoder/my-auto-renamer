@@ -249,7 +249,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
         try:
             if type == "document":
                 suc = await bot.send_document(
-                    update.message.chat.id,
+                    update.chat.id,
                     document=file_path,
                     thumb=ph_path,
                     caption=caption,
@@ -258,7 +258,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
                 )
             elif type == "video":
                 suc = await bot.send_video(
-                    update.message.chat.id,
+                    update.chat.id,
                     video=file_path,
                     caption=caption,
                     thumb=ph_path,
@@ -268,7 +268,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
                 )
             elif type == "audio":
                 suc = await bot.send_audio(
-                    update.message.chat.id,
+                    update.chat.id,
                     audio=file_path,
                     caption=caption,
                     thumb=ph_path,

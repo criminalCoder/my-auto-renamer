@@ -164,7 +164,7 @@ async def extract_details(file_name):
             if "fandub" in file_name.lower():
                 language_name += "(fanDub)"
             elif "org" in file_name.lower():
-                language_name += "(ORG)"
+                language_name += "(org)"
 
             detected_languages.append(language_name)
 
@@ -179,7 +179,7 @@ async def rename_file(file_name, title):
     season, full_season, episode, resolution, quality, subtitle, languages_list, fullepisode, codec, complete = await extract_details(file_name)
     n_title = title if title is not None else ""  # Placeholder for extracting title (can enhance this further)
     # n_title = extract_title(file_name)   # Placeholder for extracting title (can enhance this further)
-    
+
     n_season = f"{season} •" if season is not None else ""
     n_episode = f"{episode} •" if episode is not None else ""
     n_fullepisode = f"[{fullepisode}]" if fullepisode is not None else ""
@@ -215,9 +215,9 @@ async def auto_rename(client, message):
     file = getattr(message, message.media.value)
     filename = file.file_name
     title = message.caption
-    await message.reply(f"Just wait for a while, your file is being ready to rename...")
+    lazymsg = await message.reply(f"🤞 Let the magic begin... ❤")
     if await is_webseries(filename):
-        print("Detected webseries")
+        # print("Detected webseries")
         new_file_name = await rename_file(filename, title)
         try:
             if not "." in new_file_name:
@@ -230,16 +230,8 @@ async def auto_rename(client, message):
             new_lazy_name = new_file_name + ".mkv"
             print(e)
             pass
-        # unique_id = f"{message.from_user.id}_{int(time.time())}"  # Unique ID using user ID and timestamp
-        # update = CallbackQuery(
-        #         id=unique_id,  # Unique ID for the callback
-        #         from_user=message.from_user,  # User initiating the message
-        #         message=message,  # Original message
-        #         message=message,  # Original message
-        #         data=f"upload_video",  # Mimic callback data
-        #     )
-        # await lazydevelopertaskmanager(client, update, new_file_name)
-        await lazydevelopertaskmanager(client, message, new_lazy_name, file)
+
+        await lazydevelopertaskmanager(client, message, new_lazy_name, file, lazymsg)
     await client.send_message(chat_id=message.from_user.id, text=f"📌Original: {filename} \n\n🤞Renamed: {new_file_name}")
 
 

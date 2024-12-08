@@ -206,7 +206,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             if ph_path:
                 os.remove(ph_path)
 
-        if not await verify_forward_status():
+        if not await verify_forward_status(user_id):
             return await bot.send_message(user_id, f"Stop forward triggered, Happy renaming 🤞")
 
         try:

@@ -291,7 +291,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
         # Delete the original file message in the bot's PM => @LazyDeveloperr
         # Delete the original file message in the bot's PM => @LazyDeveloperr
         try:
-            await file.delete()
+            # await file.delete()
             await suc.delete()
             # 
             # 

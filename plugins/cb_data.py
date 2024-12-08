@@ -51,7 +51,7 @@ def get_manager():
 async def lazydevelopertaskmanager(bot, message, new_file_name, file):
     try:
         user_id = message.from_user.id
-        ok = await message.reply("Initiating task......")
+        nehu = await message.reply("Initiating task......")
         # Initialize user-specific task tracking if not present
         if user_id not in user_tasks:
             user_tasks[user_id] = {
@@ -71,15 +71,15 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, file):
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await ok.edit("🔄 Task is in the queue. It will start soon. ⏳")
+                await nehu.edit("🔄 Task is in the queue. It will start soon. ⏳")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
-                create_task(process_task(bot, user_id, task_data, file))  # Start task in background
+                create_task(process_task(bot, user_id, task_data, file, nehu))  # Start task in background
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
-async def process_task(bot, user_id, task_data, file):
+async def process_task(bot, user_id, task_data, file, nehu):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
@@ -92,7 +92,7 @@ async def process_task(bot, user_id, task_data, file):
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
         # file = update.message.reply_to_message
         # org_file = file
-        ms = await update.message.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
+        ms = await nehu.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
         c_time = time.time()
         try:
             path = await file.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))

@@ -95,8 +95,13 @@ async def process_task(bot, user_id, task_data, file, nehu):
         ms = await nehu.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳...")
         c_time = time.time()
         file_id = file.file_id
+         # Check if the message contains media (Video or Document)
+        if not (update.video or update.document):
+            print("No media found to preocess...")
+            # return await update.reply("No media file found to process.")
         try:
-            path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            # path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
         except Exception as e:
             return await ms.edit(e)
         duration = 0
@@ -112,9 +117,10 @@ async def process_task(bot, user_id, task_data, file, nehu):
         except:
             pass
         ph_path = None
-        media = getattr(file, file.media.value)
-        c_caption = await db.get_caption(update.message.chat.id)
-        c_thumb = await db.get_thumbnail(update.message.chat.id)
+        # media = getattr(file, file.media.value)
+        media = file
+        c_caption = await db.get_caption(update.chat.id)
+        c_thumb = await db.get_thumbnail(update.chat.id)
         if c_caption:
             try:
                 caption = c_caption.format(filename=new_filename, filesize=humanize.naturalsize(media.file_size),

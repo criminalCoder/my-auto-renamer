@@ -93,8 +93,9 @@ async def process_task(bot, user_id, task_data, file, nehu):
         
         try:
             filez = update.reply_to_message_id
-            filex = update.reply_to_message
-            print(file)
+            filex = update.reply_to_message_id
+            print(f"1 =>{filex}")
+            print(f"2 =>{filez}")
         except Exception as lazyerror:
             print(lazyerror)
             pass
@@ -108,17 +109,11 @@ async def process_task(bot, user_id, task_data, file, nehu):
             print("No media found to preocess...")
             # return await update.reply("No media file found to process.")
         try:
-            print("method 1")
-            path = await filez.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
             # path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
         except Exception as e:
-            print("method 2")
-            path = await filex.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
-        
-        print("method 3")
-        path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
-            # return await ms.edit(e)
-
+            # path = await filex.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            return await ms.edit(e)
         duration = 0
         # splitpath = path.split("/downloads/")
         # dow_file_name = splitpath[1]

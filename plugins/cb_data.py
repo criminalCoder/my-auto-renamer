@@ -62,7 +62,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, file):
 
         task_data = {
             "update": message,
-            "type": "video",
+            "type": "document",
             "new_name": new_file_name,
         }
 
@@ -110,6 +110,8 @@ async def process_task(bot, user_id, task_data, file, nehu):
             # return await update.reply("No media file found to process.")
         try:
             path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            print(f"download completed |=> {path}")
+            
             # path = await bot.download_media(file_id, file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
         except Exception as e:
             # path = await filex.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
@@ -121,14 +123,18 @@ async def process_task(bot, user_id, task_data, file, nehu):
         # os.rename(old_file_name, file_path)
         # duration = 0
         try:
+            print(f" Trying to get duration |=> {duration}")
             metadata = extractMetadata(createParser(file_path))
             if metadata.has("duration"):
                 duration = metadata.get('duration').seconds
+            print(f"Got duration ✅|=> {duration}")
         except:
             pass
         ph_path = None
-        # media = getattr(file, file.media.value)
-        media = file
+        print(f"Trying to get media |=> ")
+        media = getattr(update, update.media.value)
+        print(f" Got media |=> {media} ")
+        # media = file
         c_caption = await db.get_caption(update.chat.id)
         c_thumb = await db.get_thumbnail(update.chat.id)
         if c_caption:
@@ -140,6 +146,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
                 return
         else:
             caption = f"**{new_filename}**"
+        print(f"Trying to get thumbnail")
         if (media.thumbs or c_thumb):
             if c_thumb:
                 ph_path = await bot.download_media(c_thumb)
@@ -149,6 +156,7 @@ async def process_task(bot, user_id, task_data, file, nehu):
             img = Image.open(ph_path)
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
+        print(f"🤳 Got Thumbnail |=> ✅")
         await ms.edit("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....")
         c_time = time.time()
         # print(f" Before getting forward This is user id {update.from_user.id}")
@@ -173,215 +181,215 @@ async def process_task(bot, user_id, task_data, file, nehu):
             return  # Stop further execution
 
 
-        if String_Session !="None":
+        # if String_Session !="None":
+        #     try:
+        #         zbot = Client("Z4renamer", session_string=String_Session, api_id=API_ID, api_hash=API_HASH)
+        #         print("Ubot Connected")
+        #     except Exception as e:
+        #         print(e)
+        #     await zbot.start()
+        #     try:
+        #         if type == "document":
+        #             suc = await zbot.send_document(
+        #                 int(Permanent_4gb),
+        #                 document=file_path,
+        #                 thumb=ph_path,
+        #                 caption=caption,
+        #                 progress=progress_for_pyrogram,
+        #                 progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+        #             )
+        #         elif type == "video":
+        #             suc = await zbot.send_video(
+        #                 int(Permanent_4gb),
+        #                 video=file_path,
+        #                 caption=caption,
+        #                 thumb=ph_path,
+        #                 duration=duration,
+        #                 progress=progress_for_pyrogram,
+        #                 progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+        #             )
+        #         elif type == "audio":
+        #             suc = await zbot.send_audio(
+        #                 int(Permanent_4gb),
+        #                 audio=file_path,
+        #                 caption=caption,
+        #                 thumb=ph_path,
+        #                 duration=duration,
+        #                 progress=progress_for_pyrogram,
+        #                 progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+        #             )
+        #         try:
+        #             await bot.copy_message(chat_id = update.message.chat.id, from_chat_id = int(Permanent_4gb),message_id = suc.id)
+        #         except Exception as e:
+        #             pass
+        #         try:
+        #             await bot.copy_message(chat_id = forward_id, from_chat_id = int(Permanent_4gb),message_id = suc.id)
+        #         except Exception as e:
+        #             pass
+        #     except Exception as e:
+        #         await ms.edit(f" Erro {e}")
+
+        #         os.remove(file_path)
+        #         if ph_path:
+        #             os.remove(ph_path)
+        #         return
+            
+        #     # Delete the original file message in the bot's PM @LazyDeveloperr
+        #     try:
+        #         await file.delete()
+        #         await suc.delete()
+        #     except Exception as e:
+        #         print(f"Error deleting original file message: {e}")
+            
+        #     await ms.delete()
+        #     os.remove(file_path)
+        #     if ph_path:
+        #         os.remove(ph_path)
+        # else:
+        try:
+            if type == "document":
+                suc = await bot.send_document(
+                    update.message.chat.id,
+                    document=file_path,
+                    thumb=ph_path,
+                    caption=caption,
+                    progress=progress_for_pyrogram,
+                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                )
+            elif type == "video":
+                suc = await bot.send_video(
+                    update.message.chat.id,
+                    video=file_path,
+                    caption=caption,
+                    thumb=ph_path,
+                    duration=duration,
+                    progress=progress_for_pyrogram,
+                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                )
+            elif type == "audio":
+                suc = await bot.send_audio(
+                    update.message.chat.id,
+                    audio=file_path,
+                    caption=caption,
+                    thumb=ph_path,
+                    duration=duration,
+                    progress=progress_for_pyrogram,
+                    progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
+                )
             try:
-                zbot = Client("Z4renamer", session_string=String_Session, api_id=API_ID, api_hash=API_HASH)
-                print("Ubot Connected")
+                await suc.copy(forward_id)
+                # await suc.copy(lazy_target_chat_id)
+            except Exception as e:
+                pass
+        except Exception as e:
+            await ms.edit(f" Erro {e}")
+            os.remove(file_path)
+            if ph_path:
+                os.remove(ph_path)
+            # return
+        
+        # Delete the original file message in the bot's PM => @LazyDeveloperr
+        # Delete the original file message in the bot's PM => @LazyDeveloperr
+        try:
+            await file.delete()
+            await suc.delete()
+            # 
+            # 
+            # (C) LazyDeveloperr ❤
+            #
+            #
+            try:
+                print("-----🍟. LazyDeveloperr .🍟-----")
+                sessionstring = await db.get_session(user_id)
+                apiid = await db.get_api(user_id)
+                apihash = await db.get_hash(user_id)
+                # Check if any value is missing
+                if not sessionstring or not apiid or not apihash:
+                    missing_values = []
+                    if not sessionstring:
+                        missing_values.append("session string")
+                    if not apiid:
+                        missing_values.append("API ID")
+                    if not apihash:
+                        missing_values.append("API hash")
+                    
+                    missing_fields = ", ".join(missing_values)
+                    await bot.send_message(
+                        chat_id=msg.chat.id,
+                        text=f"⛔ Missing required information:<b> {missing_fields}. </b>\n\nPlease ensure you have set up all the required details in the database.",
+                        parse_mode=enums.ParseMode.HTML
+                    )
+                    return  # Exit the function if values are missing
+                
+                run_lazybot = TelegramClient(StringSession(sessionstring), apiid, apihash)
+                await run_lazybot.start()
+                print("🔥 user bot initiated 🚀 ")
             except Exception as e:
                 print(e)
-            await zbot.start()
-            try:
-                if type == "document":
-                    suc = await zbot.send_document(
-                        int(Permanent_4gb),
-                        document=file_path,
-                        thumb=ph_path,
-                        caption=caption,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                elif type == "video":
-                    suc = await zbot.send_video(
-                        int(Permanent_4gb),
-                        video=file_path,
-                        caption=caption,
-                        thumb=ph_path,
-                        duration=duration,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                elif type == "audio":
-                    suc = await zbot.send_audio(
-                        int(Permanent_4gb),
-                        audio=file_path,
-                        caption=caption,
-                        thumb=ph_path,
-                        duration=duration,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                try:
-                    await bot.copy_message(chat_id = update.message.chat.id, from_chat_id = int(Permanent_4gb),message_id = suc.id)
-                except Exception as e:
-                    pass
-                try:
-                    await bot.copy_message(chat_id = forward_id, from_chat_id = int(Permanent_4gb),message_id = suc.id)
-                except Exception as e:
-                    pass
-            except Exception as e:
-                await ms.edit(f" Erro {e}")
 
-                os.remove(file_path)
-                if ph_path:
-                    os.remove(ph_path)
-                return
-            
-            # Delete the original file message in the bot's PM @LazyDeveloperr
+            # (C) LazyDeveloperr ❤
+            forwarded_lazy_count = 0
+            max_forward_lazy_count = 1
+            skiped_lazy_files = 0
+            # (C) LazyDeveloperr ❤
             try:
-                await file.delete()
-                await suc.delete()
-            except Exception as e:
-                print(f"Error deleting original file message: {e}")
-            
-            await ms.delete()
-            os.remove(file_path)
-            if ph_path:
-                os.remove(ph_path)
-        else:
-            try:
-                if type == "document":
-                    suc = await bot.send_document(
-                        update.message.chat.id,
-                        document=file_path,
-                        thumb=ph_path,
-                        caption=caption,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                elif type == "video":
-                    suc = await bot.send_video(
-                        update.message.chat.id,
-                        video=file_path,
-                        caption=caption,
-                        thumb=ph_path,
-                        duration=duration,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                elif type == "audio":
-                    suc = await bot.send_audio(
-                        update.message.chat.id,
-                        audio=file_path,
-                        caption=caption,
-                        thumb=ph_path,
-                        duration=duration,
-                        progress=progress_for_pyrogram,
-                        progress_args=("𝚃𝚁𝚈𝙸𝙽𝙶 𝚃𝙾 𝚄𝙿𝙻𝙾𝙰𝙳....", ms, c_time)
-                    )
-                try:
-                    await suc.copy(forward_id)
-                    # await suc.copy(lazy_target_chat_id)
-                except Exception as e:
-                    pass
-            except Exception as e:
-                await ms.edit(f" Erro {e}")
-                os.remove(file_path)
-                if ph_path:
-                    os.remove(ph_path)
-                # return
-            
-            # Delete the original file message in the bot's PM => @LazyDeveloperr
-            # Delete the original file message in the bot's PM => @LazyDeveloperr
-            try:
-                await file.delete()
-                await suc.delete()
-                # 
-                # 
-                # (C) LazyDeveloperr ❤
-                #
-                #
-                try:
-                    print("-----🍟. LazyDeveloperr .🍟-----")
-                    sessionstring = await db.get_session(user_id)
-                    apiid = await db.get_api(user_id)
-                    apihash = await db.get_hash(user_id)
-                    # Check if any value is missing
-                    if not sessionstring or not apiid or not apihash:
-                        missing_values = []
-                        if not sessionstring:
-                            missing_values.append("session string")
-                        if not apiid:
-                            missing_values.append("API ID")
-                        if not apihash:
-                            missing_values.append("API hash")
-                        
-                        missing_fields = ", ".join(missing_values)
-                        await bot.send_message(
-                            chat_id=msg.chat.id,
-                            text=f"⛔ Missing required information:<b> {missing_fields}. </b>\n\nPlease ensure you have set up all the required details in the database.",
-                            parse_mode=enums.ParseMode.HTML
-                        )
-                        return  # Exit the function if values are missing
-                    
-                    run_lazybot = TelegramClient(StringSession(sessionstring), apiid, apihash)
-                    await run_lazybot.start()
-                    print("🔥 user bot initiated 🚀 ")
-                except Exception as e:
-                    print(e)
+                async for msg in run_lazybot.iter_messages(lazy_target_chat_id, limit=10):
+                    # print(f"Message ID: {msg.id}, Content: {msg.text or 'No text'}")
+                    # Forward or process the message
+                    if forwarded_lazy_count >= max_forward_lazy_count:
+                        forwarded_lazy_count = 0
+                        break
+                    got_lazy_file = msg.document or msg.video or msg.audio
 
-                # (C) LazyDeveloperr ❤
-                forwarded_lazy_count = 0
-                max_forward_lazy_count = 1
-                skiped_lazy_files = 0
-                # (C) LazyDeveloperr ❤
-                try:
-                    async for msg in run_lazybot.iter_messages(lazy_target_chat_id, limit=10):
-                        # print(f"Message ID: {msg.id}, Content: {msg.text or 'No text'}")
-                        # Forward or process the message
-                        if forwarded_lazy_count >= max_forward_lazy_count:
-                            forwarded_lazy_count = 0
-                            break
-                        got_lazy_file = msg.document or msg.video or msg.audio
-
-                        if got_lazy_file:  # Check if the message contains media
-                            filesize = msg.document.size if msg.document else msg.video.size if msg.video else msg.audio.size if msg.audio else 0
-                            lazydeveloper_size = 2090000000
-                            if filesize < lazydeveloper_size:
-                                # await lgbtq.forward_messages('@LazyDevDemo_BOT', msg.id, target_chat_id)
-                                await run_lazybot.send_message(BOT_USERNAME, msg.text or "", file=got_lazy_file)
-                                # print(f"✅ Forwarded media with ID {msg.id}")
-                                await asyncio.sleep(1)
-                                await run_lazybot.delete_messages(lazy_target_chat_id, msg.id)
-                                forwarded_lazy_count += 1
-                            else:
-                                await bot.send_message(
-                                    update.from_user.id,
-                                    f"❌ Skipped media with ID {msg.id}, Size greater than 2gb"
-                                    )
-                                skiped_lazy_files += 1
-                                print(f"❌ Skipped media with ID {msg.id}, Size greater than 2gb")
-                                await asyncio.sleep(1)
-
+                    if got_lazy_file:  # Check if the message contains media
+                        filesize = msg.document.size if msg.document else msg.video.size if msg.video else msg.audio.size if msg.audio else 0
+                        lazydeveloper_size = 2090000000
+                        if filesize < lazydeveloper_size:
+                            # await lgbtq.forward_messages('@LazyDevDemo_BOT', msg.id, target_chat_id)
+                            await run_lazybot.send_message(BOT_USERNAME, msg.text or "", file=got_lazy_file)
+                            # print(f"✅ Forwarded media with ID {msg.id}")
+                            await asyncio.sleep(1)
+                            await run_lazybot.delete_messages(lazy_target_chat_id, msg.id)
+                            forwarded_lazy_count += 1
                         else:
-                            print(f"Skipped non-media message with ID {msg.id}")
+                            await bot.send_message(
+                                update.from_user.id,
+                                f"❌ Skipped media with ID {msg.id}, Size greater than 2gb"
+                                )
+                            skiped_lazy_files += 1
+                            print(f"❌ Skipped media with ID {msg.id}, Size greater than 2gb")
+                            await asyncio.sleep(1)
+
+                    else:
+                        print(f"Skipped non-media message with ID {msg.id}")
     
-                except Exception as e:
-                    print(f"Error occurred: {e}")
-                    await update.reply("❌ Failed to process messages.")
-
-                # 
-                # 
-                # (C) LazyDeveloperr ❤
-                print(f"❤ New file forwarded to bot after renaming 🍟")
-                await run_lazybot.disconnect()
-                if not run_lazybot.is_connected():
-                    print("Session is disconnected successfully!")
-                else:
-                    print("Session is still connected.")
-                print("-----🍟. LazyDeveloperr .🍟----- ")
-
-                # (C) LazyDeveloperr ❤
-                # 
-                #
-                #
-                
             except Exception as e:
-                print(f"Error deleting original file message =/= lastt message -> Check code in cb_data fom line no 257 to 306 @LazyDeveloperr ❤\n: {e}")
+                print(f"Error occurred: {e}")
+                await update.reply("❌ Failed to process messages.")
+
+            # 
+            # 
+            # (C) LazyDeveloperr ❤
+            print(f"❤ New file forwarded to bot after renaming 🍟")
+            await run_lazybot.disconnect()
+            if not run_lazybot.is_connected():
+                print("Session is disconnected successfully!")
+            else:
+                print("Session is still connected.")
+            print("-----🍟. LazyDeveloperr .🍟----- ")
+
+            # (C) LazyDeveloperr ❤
+            # 
+            #
+            #
             
-            await ms.delete()
-            os.remove(file_path)
-            if ph_path:
-                os.remove(ph_path)
+        except Exception as e:
+            print(f"Error deleting original file message =/= lastt message -> Check code in cb_data fom line no 257 to 306 @LazyDeveloperr ❤\n: {e}")
+        
+        await ms.delete()
+        os.remove(file_path)
+        if ph_path:
+            os.remove(ph_path)
 
     except Exception as lazydeveloperr:
         print(lazydeveloperr)

@@ -97,5 +97,14 @@ class Database:
     async def get_lazy_target_chat_id(self, id):
         user = await self.col.find_one({'_id': int(id)})
         return user.get('lazy_target_chat_id', None)
+    
+    # enable / disable => forward after rename [cmd = enable_newfile / disable_newfile]
+    async def set_forward_after_rename(self, id, status):
+        z = await self.col.update_one({'_id': int(id)}, {'$set': {'forward_after_rename': status}})
+        print(z)
+
+    async def get_forward_after_rename(self, id):
+        user = await self.col.find_one({'_id': int(id)})
+        return user.get('forward_after_rename', None)
 
 db = Database(DB_URL, DB_NAME)

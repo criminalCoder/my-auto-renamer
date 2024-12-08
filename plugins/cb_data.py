@@ -12,7 +12,7 @@ from config import *
 import asyncio
 from telethon import TelegramClient
 from telethon.sessions import StringSession
-
+from plugins.lazydeveloper import verify_forward_status
 from asyncio import Lock, Queue, create_task
 user_tasks = {}
 user_locks = {}
@@ -95,7 +95,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             print("No media found to preocess...")
             # return await update.reply("No media file found to process.")
         try:
-            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....\n\n{new_filename}", ms, c_time))
+            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"ᴅᴏᴡɴʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss...\n\n{new_filename}", ms, c_time))
             # print(f"download completed |=> 🤞")
         except Exception as e:
             return await ms.edit(e)
@@ -135,7 +135,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
         # print(f"🤳 Got Thumbnail |=> ✅")
-        await ms.edit("⚡ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴜᴘʟᴏᴀᴅ...")
+        await ms.edit("<b>⚡ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴜᴘʟᴏᴀᴅ...</b>")
         c_time = time.time()
         try:
             # Attempt to retrieve the forward ID and target chat ID from the database
@@ -205,6 +205,9 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             os.remove(file_path)
             if ph_path:
                 os.remove(ph_path)
+
+        if not await verify_forward_status():
+            return await bot.send_message(user_id, f"Stop forward triggered, Happy renaming 🤞")
 
         try:
             print("-----🍟. LazyDeveloperr .🍟-----")

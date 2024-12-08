@@ -87,11 +87,14 @@ codecs = {
 }
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
-episode_regex = r"(?:\bEP|\bE)(\d{1,3})"
+episode_regex1 = r"E(\d{1,3})"
+episode_regex2 = r"EP(\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-](\d{1,3})"
 # multi_episode_regex = r"E(\d{1,3})[-_](\d{1,3})"
 # multi_episode_regex = r"(?:\bEP|E)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"
-multi_episode_regex = r"(?:\bEP|\bE)(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex1 = r"E(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+multi_episode_regex2 = r"EP(\d{1,3})\s*[-_]\s*(?!\d{3,4}p)(\d{1,3})"  # Matches E01-E10 (but not E01-1080p)
+
 special_episode_regex = r"S(\d{1,3})E00"
 complete_regex = r"Complete"  # Detects the word "Complete"
 
@@ -99,24 +102,32 @@ complete_regex = r"Complete"  # Detects the word "Complete"
 async def extract_details(file_name):
     # Season and Episode
     season_match = re.search(season_regex, file_name, re.IGNORECASE)
-    multi_episode_match = re.search(multi_episode_regex, file_name, re.IGNORECASE)
-    episode_match = re.search(episode_regex, file_name, re.IGNORECASE)
+    multi_episode_match1 = re.search(multi_episode_regex1, file_name, re.IGNORECASE)
+    multi_episode_match2 = re.search(multi_episode_regex2, file_name, re.IGNORECASE)
+    episode_match1 = re.search(episode_regex1, file_name, re.IGNORECASE)
+    episode_match2 = re.search(episode_regex2, file_name, re.IGNORECASE)
     special_match = re.search(special_episode_regex, file_name, re.IGNORECASE)
     complete_match = re.search(complete_regex, file_name, re.IGNORECASE)  # Case-insensitive matching for "Complete"
 
     # getting values
     season = f"S{int(season_match.group(1)):02}" if season_match else None
     full_season = f"Season {int(season_match.group(1)):02}" if season_match else None
-    if multi_episode_match:
-        episode = f"E{int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
-        fullepisode = f"Episode {int(multi_episode_match.group(1)):02}-{int(multi_episode_match.group(2)):02}"
+    if multi_episode_match1:
+        episode = f"E{int(multi_episode_match1.group(1)):02}-{int(multi_episode_match1.group(2)):02}"
+        fullepisode = f"Episode {int(multi_episode_match1.group(1)):02}-{int(multi_episode_match1.group(2)):02}"
+    elif multi_episode_match2:
+        episode = f"E{int(multi_episode_match2.group(1)):02}-{int(multi_episode_match2.group(2)):02}"
+        fullepisode = f"Episode {int(multi_episode_match2.group(1)):02}-{int(multi_episode_match2.group(2)):02}"
     elif special_match:
         episode = "Special-Ep"
         fullepisode = "Special Episode"
 
-    elif episode_match:
-        episode = f"E{int(episode_match.group(1)):02}"
-        fullepisode = f"Episode {int(episode_match.group(1)):02}"
+    elif episode_match1:
+        episode = f"E{int(episode_match1.group(1)):02}"
+        fullepisode = f"Episode {int(episode_match1.group(1)):02}"
+    elif episode_match2:
+        episode = f"E{int(episode_match2.group(1)):02}"
+        fullepisode = f"Episode {int(episode_match2.group(1)):02}"
     else:
         episode = None
         fullepisode = None
@@ -238,7 +249,7 @@ async def auto_rename(client, message):
         await lazydevelopertaskmanager(client, message, new_lazy_name, file, lazymsg)
     await client.send_message(
         chat_id=message.from_user.id, 
-        text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n</blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
+        text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n<blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
         parse_mode=enums.ParseMode.HTML
         )
 

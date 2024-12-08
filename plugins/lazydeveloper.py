@@ -472,6 +472,45 @@ async def rename(client, message):
         print("Session is still connected.")
 
 
+@Client.on_message(filters.command("enable_forward"))
+async def enable_forward(client, message):
+    user_id = message.from_user.id
+    status = f"enable"
+    lms = await message.reply("ᴇɴᴀʙʟɪɴɢ ꜰᴏʀᴡᴀʀᴅ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍᴇ...") 
+    await db.set_forward_after_rename(user_id, status)
+    await lms.edit(f"✅⏩ ᴇɴᴀʙʟᴇᴅ ꜰᴏʀᴡᴀʀᴅ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍᴇ...")
+
+@Client.on_message(filters.command("disable_forward"))
+async def disable_forward(client, message):
+    user_id = message.from_user.id
+    status = f"disable"
+    lms = await message.reply("ᴅɪsᴀʙʟɪɴɢ ꜰᴏʀᴡᴀʀᴅ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍᴇ...") 
+    await db.set_forward_after_rename(user_id, status)
+    await lms.edit(f"🚫⏩ ᴅɪsᴀʙʟᴇᴅ ꜰᴏʀᴡᴀʀᴅ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍᴇ... ")
+
+@Client.on_message(filters.command("forward_status"))
+async def forward_status(client, message):
+    user_id = message.from_user.id
+    status = await db.get_forward_after_rename(user_id)
+    if status == "enable":
+        await message.reply("<blockquote>⏳ sᴛᴀᴛᴜs => ᴇɴᴀʙʟᴇᴅ ✅⏩</blockquote>\nʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ sᴛᴀᴛᴜs ɪs ᴇɴᴀʙʟᴇᴅ, ɪ ᴡɪʟʟ ғᴏʀᴡᴀʀᴅ ʏᴏᴜ ᴀ ɴᴇᴡ ғɪʟᴇ ᴀғᴛᴇʀ ʀᴇɴᴀᴍɪɴɢ ᴇᴀᴄʜ ғɪʟᴇ", parse_mode=enums.ParseMode.HTML)
+    elif status == "disable":
+        await message.reply("<blockquote>⏳ sᴛᴀᴛᴜs => ᴅɪsᴀʙʟᴇᴅ 🚫⏩</blockquote>\nʏᴏᴜʀ ғᴏʀᴡᴀʀᴅ sᴛᴀᴛᴜs ɪs ᴅɪsᴀʙʟᴇᴅ, ɪ ᴡɪʟʟ ғᴏʀᴡᴀʀᴅ ʏᴏᴜ ᴀ ɴᴇᴡ ғɪʟᴇ ᴀғᴛᴇʀ ʀᴇɴᴀᴍɪɴɢ ᴇᴀᴄʜ ғɪʟᴇ", parse_mode=enums.ParseMode.HTML)
+    else:
+        await message.reply("<blockquote>⏳ sᴛᴀᴛᴜs => ɴᴏᴛ ꜰᴏᴜɴᴅ 💔</blockquote>\nɪ'ᴠᴇ ᴅᴇᴄɪᴅᴇᴅ ᴛᴏ ꜰᴏʀᴡᴀʀᴅ ʏᴏᴜ ᴀ ɴᴇᴡ ꜰɪʟᴇ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍɪɴɢ ᴇᴀᴄʜ ꜰɪʟᴇ", parse_mode=enums.ParseMode.HTML)
+    return
+
+
+async def verify_forward_status(user_id: int):
+    status = await db.get_forward_after_rename(user_id)
+    
+    if status == "enable":
+        return True
+    elif status == "disable":
+        return False
+    else:
+        return True
+
 async def verify_user(user_id: int):
     return user_id in ADMIN
 

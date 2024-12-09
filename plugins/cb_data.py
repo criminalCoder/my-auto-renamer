@@ -350,7 +350,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
                 print(f"Removed 1 active task")
                 if not user_tasks[user_id]["queue"].empty():
                     next_task = await user_tasks[user_id]["queue"].get()
-                    smss = await bot.send_message("initialing next queued task ...")
+                    smss = await bot.send_message(user_id, text=f"initialing next queued task ...")
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")

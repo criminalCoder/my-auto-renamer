@@ -236,7 +236,7 @@ async def auto_rename(client, message):
     if title is None:
         return message.reply("😕 ᴘʟᴇᴀsᴇ ᴍᴀᴋᴇ sᴜʀᴇ ᴛʜᴀᴛ ʏᴏᴜ ʜᴀᴠᴇ ᴍᴇɴᴛɪᴏɴᴇᴅ sᴇʀɪᴇs ɴᴀᴍᴇ ɪɴ ғɪʟᴇ...")
 
-    await message.reply(f"<b>🤞 ʟᴇᴛ ᴛʜᴇ ᴍᴀɢɪᴄ ʙᴇɢɪɴ... ❤</b>", parse_mode=enums.ParseMode.HTML)
+    lazymsg = await message.reply(f"<b>🤞 ʟᴇᴛ ᴛʜᴇ ᴍᴀɢɪᴄ ʙᴇɢɪɴ... ❤</b>", parse_mode=enums.ParseMode.HTML)
     if await is_webseries(filename):
         # print("Detected webseries")
         new_file_name = await rename_file(filename, title)
@@ -253,7 +253,7 @@ async def auto_rename(client, message):
             print(e)
             pass
 
-        await lazydevelopertaskmanager(client, message, new_lazy_name)
+        await lazydevelopertaskmanager(client, message, new_lazy_name, lazymsg)
     await client.send_message(
         chat_id=message.from_user.id, 
         text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n<blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",

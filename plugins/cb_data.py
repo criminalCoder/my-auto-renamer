@@ -87,10 +87,10 @@ async def update_task_status_message(bot, user_id):
             print(f"Failed to send new task status message: {e}")
 
 # @Client.on_callback_query(filters.regex("upload"))
-async def lazydevelopertaskmanager(bot, message, new_file_name):
+async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
     try:
         user_id = message.from_user.id
-        await message.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
+        await lazymsg.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
         # Initialize user-specific task tracking if not present
         if user_id not in user_tasks:
             user_tasks[user_id] = {
@@ -110,17 +110,17 @@ async def lazydevelopertaskmanager(bot, message, new_file_name):
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await message.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
+                await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
-                create_task(process_task(bot, user_id, task_data))  # Start task in background
+                create_task(process_task(bot, user_id, task_data, lazymsg))  # Start task in background
         
         await update_task_status_message(bot, user_id)
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
-async def process_task(bot, user_id, task_data):
+async def process_task(bot, user_id, task_data, lazymsg):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
@@ -129,17 +129,17 @@ async def process_task(bot, user_id, task_data):
         type = task_data["type"]
         new_filename = new_name
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
-        ms = await update.edit("<b>⏳ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ...</b>")
+        await lazymsg.edit("<b>⏳ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ...</b>")
         c_time = time.time()
          # Check if the message contains media (Video or Document)
         if not (update.video or update.document):
             print("No media found to preocess...")
             # return await update.reply("No media file found to process.")
         try:
-            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"ᴅᴏᴡɴʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss...\n\n{new_filename}", ms, c_time))
+            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"ᴅᴏᴡɴʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss...\n\n{new_filename}", lazymsg, c_time))
             # print(f"download completed |=> 🤞")
         except Exception as e:
-            return await ms.edit(e)
+            return await lazymsg.edit(e)
         duration = 0
         try:
             # print(f" Trying to get duration |=> {duration}")
@@ -161,7 +161,7 @@ async def process_task(bot, user_id, task_data):
                 caption = c_caption.format(filename=new_filename, filesize=humanize.naturalsize(media.file_size),
                                         duration=convert(duration))
             except Exception as e:
-                await ms.edit(text=f"Your caption Error unexpected keyword ●> ({e})")
+                await lazymsg.edit(text=f"Your caption Error unexpected keyword ●> ({e})")
                 return
         else:
             caption = f"{new_filename}"
@@ -176,7 +176,7 @@ async def process_task(bot, user_id, task_data):
             img.resize((320, 320))
             img.save(ph_path, "JPEG")
         # print(f"🤳 Got Thumbnail |=> ✅")
-        await ms.edit("<b>⚡ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴜᴘʟᴏᴀᴅ...</b>")
+        await lazymsg.edit("<b>⚡ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴜᴘʟᴏᴀᴅ...</b>")
         c_time = time.time()
         try:
             # Attempt to retrieve the forward ID and target chat ID from the database
@@ -206,7 +206,7 @@ async def process_task(bot, user_id, task_data):
                     thumb=ph_path,
                     caption=caption,
                     progress=progress_for_pyrogram,
-                    progress_args=(f"<b>==========x==========</b>⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀\n<b>==========x==========</b>\n<blockquote>{new_filename}</blockquote>", ms, c_time),
+                    progress_args=(f"<b>==========x==========</b>⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀\n<b>==========x==========</b>\n<blockquote>{new_filename}</blockquote>", lazymsg, c_time),
                     parse_mode=enums.ParseMode.HTML
                 )
             elif type == "video":
@@ -217,7 +217,7 @@ async def process_task(bot, user_id, task_data):
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", ms, c_time)
+                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", lazymsg, c_time)
                 )
             elif type == "audio":
                 suc = await bot.send_audio(
@@ -227,12 +227,11 @@ async def process_task(bot, user_id, task_data):
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", ms, c_time)
+                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", lazymsg, c_time)
                 )
             try:
-                await ms.edit(f"<b>❤--sᴍɪʟᴇ-ᴘʟᴇᴀsᴇ--❤<b>")
+                await lazymsg.edit(f"<b>❤--sᴍɪʟᴇ-ᴘʟᴇᴀsᴇ--❤<b>")
                 await asyncio.sleep(1)
-                await ms.delete()
                 sent = await suc.copy(forward_id)
                 # await suc.copy(lazy_target_chat_id)
                 if sent:
@@ -241,7 +240,7 @@ async def process_task(bot, user_id, task_data):
             except Exception as e:
                 pass
         except Exception as e:
-            await ms.edit(f" Erro {e}")
+            await lazymsg.edit(f" Erro {e}")
             print(f"Error => {e}")
             os.remove(file_path)
             if ph_path:
@@ -336,7 +335,6 @@ async def process_task(bot, user_id, task_data):
         except Exception as e:
             print(f"Error deleting original file message =/= lastt message -> Check code in cb_data fom line no 257 to 306 @LazyDeveloperr ❤\n: {e}")
         
-        await ms.delete()
         os.remove(file_path)
         if ph_path:
             os.remove(ph_path)
@@ -355,13 +353,13 @@ async def process_task(bot, user_id, task_data):
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")
-                    await trigger_next_task(bot, user_id, next_task)
+                    await trigger_next_task(bot, user_id, next_task,  lazymsg)
                     print(f"Triggered Next task to continue...... ")
             # Update the task status message
             await update_task_status_message(bot, user_id)
         except Exception as e:
             print(f"Error occ => {e}")
 
-async def trigger_next_task(bot, user_id, next_task):
+async def trigger_next_task(bot, user_id, next_task, lazymsg):
     print("Initiating next task...")
-    create_task(process_task(bot, user_id, next_task))  # Start next task in background
+    create_task(process_task(bot, user_id, next_task, lazymsg))  # Start next task in background

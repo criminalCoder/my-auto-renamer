@@ -350,16 +350,17 @@ async def process_task(bot, user_id, task_data, lazymsg):
                 print(f"Removed 1 active task")
                 if not user_tasks[user_id]["queue"].empty():
                     next_task = await user_tasks[user_id]["queue"].get()
+                    smss = await bot.send_message("initialing next queued task ...")
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")
-                    await trigger_next_task(bot, user_id, next_task,  lazymsg)
+                    await trigger_next_task(bot, user_id, next_task, smss)
                     print(f"Triggered Next task to continue...... ")
             # Update the task status message
             await update_task_status_message(bot, user_id)
         except Exception as e:
             print(f"Error occ => {e}")
 
-async def trigger_next_task(bot, user_id, next_task, lazymsg):
+async def trigger_next_task(bot, user_id, next_task, smss):
     print("Initiating next task...")
-    create_task(process_task(bot, user_id, next_task, lazymsg))  # Start next task in background
+    create_task(process_task(bot, user_id, next_task, smss))  # Start next task in background

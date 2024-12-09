@@ -247,7 +247,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             if ph_path:
                 os.remove(ph_path)
 
-        if not await verify_forward_status():
+        if not await verify_forward_status(user_id):
             return await bot.send_message(user_id, f"Stop forward triggered, Happy renaming 🤞")
 
         try:
@@ -344,15 +344,24 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
     except Exception as lazydeveloperr:
         print(lazydeveloperr)
     finally:
+        print(f"Finally block is being called")
         # Decrement active task count and process next task from queue
-        async with user_locks[user_id]:
-            user_tasks[user_id]["active"] -= 1
-            if not user_tasks[user_id]["queue"].empty():
-                next_task = await user_tasks[user_id]["queue"].get()
-                user_tasks[user_id]["active"] += 1
-                await trigger_next_task(bot, user_id, next_task)
-        # Update the task status message
-        await update_task_status_message(bot, user_id)
+        try:
+            async with user_locks[user_id]:
+                user_tasks[user_id]["active"] -= 1
+                print(f"Removed 1 active task")
+                if not user_tasks[user_id]["queue"].empty():
+                    next_task = await user_tasks[user_id]["queue"].get()
+                    print(f"Got Next task=> {next_task}")
+                    user_tasks[user_id]["active"] += 1
+                    print("Increased +1 Active Task")
+                    await trigger_next_task(bot, user_id, next_task)
+                    print(f"Triggered Next task to continue...... ")
+            # Update the task status message
+            await update_task_status_message(bot, user_id)
+        except Exception as e:
+            print(f"Error occ => {e}")
 
 async def trigger_next_task(bot, user_id, next_task):
+    print("Initiating next task...")
     create_task(process_task(bot, user_id, next_task))  # Start next task in background

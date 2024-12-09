@@ -87,10 +87,10 @@ async def update_task_status_message(bot, user_id):
             print(f"Failed to send new task status message: {e}")
 
 # @Client.on_callback_query(filters.regex("upload"))
-async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
+async def lazydevelopertaskmanager(bot, message, new_file_name):
     try:
         user_id = message.from_user.id
-        await lazymsg.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
+        await message.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
         # Initialize user-specific task tracking if not present
         if user_id not in user_tasks:
             user_tasks[user_id] = {
@@ -110,17 +110,17 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
+                await message.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
-                create_task(process_task(bot, user_id, task_data, lazymsg))  # Start task in background
+                create_task(process_task(bot, user_id, task_data))  # Start task in background
         
         await update_task_status_message(bot, user_id)
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
-async def process_task(bot, user_id, task_data, lazymsg):
+async def process_task(bot, user_id, task_data):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
@@ -129,7 +129,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
         type = task_data["type"]
         new_filename = new_name
         file_path = f"downloads/{user_id}{time.time()}/{new_filename}"
-        ms = await lazymsg.edit("<b>⏳ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ...</b>")
+        ms = await update.edit("<b>⏳ ᴘʀᴇᴘᴀʀɪɴɢ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ...</b>")
         c_time = time.time()
          # Check if the message contains media (Video or Document)
         if not (update.video or update.document):
@@ -355,13 +355,13 @@ async def process_task(bot, user_id, task_data, lazymsg):
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")
-                    await trigger_next_task(bot, user_id, next_task, lazymsg)
+                    await trigger_next_task(bot, user_id, next_task)
                     print(f"Triggered Next task to continue...... ")
             # Update the task status message
             await update_task_status_message(bot, user_id)
         except Exception as e:
             print(f"Error occ => {e}")
 
-async def trigger_next_task(bot, user_id, next_task, lazymsg):
+async def trigger_next_task(bot, user_id, next_task):
     print("Initiating next task...")
-    create_task(process_task(bot, user_id, next_task, lazymsg))  # Start next task in background
+    create_task(process_task(bot, user_id, next_task))  # Start next task in background

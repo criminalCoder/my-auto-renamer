@@ -308,5 +308,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             user_tasks[user_id]["active"] -= 1
             if not user_tasks[user_id]["queue"].empty():
                 next_task = await user_tasks[user_id]["queue"].get()
-                user_tasks[user_id]["active"] += 1
+                
                 create_task(process_task(bot, user_id, next_task))  # Start next task in background
+                
+                user_tasks[user_id]["active"] += 1

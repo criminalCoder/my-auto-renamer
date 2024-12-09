@@ -60,7 +60,11 @@ languages = {
 
 qualities = {
     "BLURAY": "BluRay",
+    "NF WEB-DL": "NF-WEB-DL",
+    "AMZN WEB-DL": "AMZN-WEB-DL",
     "WEB-DL": "WEB-DL",
+    "NF WEBRIP": "NF-WEBRip",
+    "AMZN WEBRIP": "AMZN-WEBRip",
     "WEBRIP": "WEBRip",
     "HDRIP": "HDRip",
     "DVDRIP": "DVDRip",
@@ -83,8 +87,10 @@ codecs = {
     "AVC": "AVC",
     "H.265": "HEVC",
     "HEVC": "HEVC",
+    "DDP": "DDP",
     "10bit HEVC": "10Bit HEVC"
 }
+
 # Updated regex patterns
 season_regex = r"S(\d{1,3})"
 episode_regex1 = r"E(\d{1,3})"
@@ -247,7 +253,7 @@ async def auto_rename(client, message):
             print(e)
             pass
 
-        await lazydevelopertaskmanager(client, message, new_lazy_name, file, lazymsg)
+        await lazydevelopertaskmanager(client, message, new_lazy_name, lazymsg)
     await client.send_message(
         chat_id=message.from_user.id, 
         text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n<blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
@@ -269,7 +275,7 @@ async def auto_rename(client, message):
 async def start(client, message):
     user = message.from_user
     if not await db.is_user_exist(user.id):
-        await db.add_user(user.id)             
+        await db.add_user(user.id)     
     txt=f"👋 Hey {user.mention} \nɪ'ᴍ ᴀɴ ᴀᴅᴠᴀɴᴄᴇ ғɪʟᴇ ʀᴇɴᴀᴍᴇʀ + ғɪʟᴇ ᴛᴏ ᴠɪᴅᴇᴏ ᴄᴏɴᴠᴇʀᴛᴇʀ ʙᴏᴛ ᴡɪᴛʜ ᴘᴇʀᴍᴀɴᴇɴᴛ ᴛʜᴜᴍʙɴᴀɪʟ & ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ sᴜᴘᴘᴏʀᴛ!\n\n♥ ʙᴇʟᴏᴠᴇᴅ ᴏᴡɴᴇʀ <a href='https://telegram.me/Simplifytuber2'>ʏᴀsʜ ɢᴏʏᴀʟ</a> 🍟"
     button=InlineKeyboardMarkup([[
         InlineKeyboardButton("✿.｡:☆ ᴏᴡɴᴇʀ ⚔ ᴅᴇᴠs ☆:｡.✿", callback_data='dev')

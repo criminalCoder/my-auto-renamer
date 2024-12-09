@@ -87,7 +87,7 @@ async def update_task_status_message(bot, user_id):
             print(f"Failed to send new task status message: {e}")
 
 # @Client.on_callback_query(filters.regex("upload"))
-async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
+async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
     try:
         user_id = message.from_user.id
         await lazymsg.edit("<b>ɪɴɪᴛɪᴀᴛɪɴɢ ᴛᴀsᴋ....<b>")
@@ -114,13 +114,13 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
-                create_task(process_task(bot, user_id, task_data, file, lazymsg))  # Start task in background
+                create_task(process_task(bot, user_id, task_data, lazymsg))  # Start task in background
         
         await update_task_status_message(bot, user_id)
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
-async def process_task(bot, user_id, task_data, file, lazymsg):
+async def process_task(bot, user_id, task_data, lazymsg):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
@@ -355,13 +355,13 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")
-                    await trigger_next_task(bot, user_id, next_task)
+                    await trigger_next_task(bot, user_id, next_task, lazymsg)
                     print(f"Triggered Next task to continue...... ")
             # Update the task status message
             await update_task_status_message(bot, user_id)
         except Exception as e:
             print(f"Error occ => {e}")
 
-async def trigger_next_task(bot, user_id, next_task):
+async def trigger_next_task(bot, user_id, next_task, lazymsg):
     print("Initiating next task...")
-    create_task(process_task(bot, user_id, next_task))  # Start next task in background
+    create_task(process_task(bot, user_id, next_task, lazymsg))  # Start next task in background

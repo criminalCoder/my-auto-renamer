@@ -253,11 +253,12 @@ async def auto_rename(client, message):
             pass
 
         await lazydevelopertaskmanager(client, message, new_lazy_name, lazymsg)
-    await client.send_message(
-        chat_id=message.from_user.id, 
-        text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n<blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
-        parse_mode=enums.ParseMode.HTML
-        )
+    
+    # await client.send_message(
+    #     chat_id=message.from_user.id, 
+    #     text=f"<blockquote>📌ᴏʀɪɢɪɴᴀʟ : {filename}</blockquote>\n<blockquote>🤞ʀᴇɴᴀᴍᴇᴅ : <code>{new_lazy_name}</code></blockquote>",
+    #     parse_mode=enums.ParseMode.HTML
+    #     )
 
 
 

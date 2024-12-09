@@ -227,20 +227,22 @@ async def update_task_status_message(bot, user_id):
     queue_count = len(queue)
 
     # Build the detailed status message
-    status_text = "<b>━━⏳ ᴛʜᴇ ᴛᴀꜱᴋ ᴍᴀɴᴀɢᴇʀ ⏳━━</b>\n"
+    status_text = "<blockquote><b>🥂🍟⏳ ᴛʜᴇ ᴛᴀꜱᴋ ᴍᴀɴᴀɢᴇʀ ⏳🍟🥂</b></blockquote>\n"
     status_text += "╭━━❰❤.<b>ʟᴀᴢʏᴅᴇᴠᴇʟᴏᴘᴇʀ</b>.❤❱━━➣\n"
 
     for index, task in enumerate(queue, start=1):
         task_id = task["id"]
+        await asyncio.sleep(1)
         status_text += (
-            f"┣⪼🤞 <b>TASK {index}</b> => <code>{task_id}</code>\n"
-            f"┣⪼⚙ <a href='https://t.me/{bot.username}?start=gettask_{task_id}'>Get Details : Click Here</a>\n"
-            f"┣━━━━━━━━━━━━━━━━━━━➣ \n"
+            f"┣⪼🍿 <b>ᴛᴀꜱᴋ {index}</b> ➣ <code>{task_id}</code>\n"
+            f"┣⪼⚙ <b><a href='https://t.me/{bot.username}?start=gettask_{task_id}'>ɢᴇᴛ ᴅᴇᴛᴀɪʟꜱ : ᴄʟɪᴄᴋ ʜᴇʀᴇ</a></b>\n"
+            f"┣━━━━━━━━━━━━━━━━━━━ \n"
         )
 
     # Add summary of active and queued tasks
+    await asyncio.sleep(1)
     status_text += (
-        f"┣<b>Active Tasks</b>: <code>{active_count}</code> | <b>In Queue</b>: <code>{queue_count}</code>\n"
+        f"┣📜 <b>ᴀᴄᴛɪᴠᴇ ᴛᴀꜱᴋꜱ</b>: <code>{active_count}</code> | ⏳<b>ɪɴ ϙᴜᴇᴜᴇ</b>: <code>{queue_count}</code>\n"
         "╰━━━━━━━━━━━━━━━━━━━➣"
     )
 
@@ -292,7 +294,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
                 task_data["status"] = "Queued"
-                sweetreply = await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
+                # sweetreply = await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
@@ -300,7 +302,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
                 create_task(process_task(bot, user_id, task_data, lazymsg))  # Start task in background
         
         await update_task_status_message(bot, user_id)
-        await sweetreply.delete()
+        # await sweetreply.delete()
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
@@ -416,7 +418,8 @@ async def process_task(bot, user_id, task_data, lazymsg):
                     progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", lazymsg, c_time)
                 )
             try:
-                await lazymsg.edit(f"<b>❤--sᴍɪʟᴇ-ᴘʟᴇᴀsᴇ--❤<b>")
+                # await lazymsg.edit(f"<b>❤--sᴍɪʟᴇ-ᴘʟᴇᴀsᴇ--❤<b>")
+                await lazymsg.delete()
                 await asyncio.sleep(1)
                 sent = await suc.copy(forward_id)
                 # await suc.copy(lazy_target_chat_id)
@@ -534,21 +537,16 @@ async def process_task(bot, user_id, task_data, lazymsg):
         try:
             async with user_locks[user_id]:
                 user_tasks[user_id]["active"] -= 1
-                print(f"Removed 1 active task")
                 if not user_tasks[user_id]["queue"].empty():
                     next_task = await user_tasks[user_id]["queue"].get()
-                    smss = await bot.send_message(user_id, text=f"initialing next queued task ...")
-                    print(f"Got Next task=> {next_task}")
+                    smss = await bot.send_message(user_id, text=f"<b>🤞 ɪɴɪᴛɪᴀᴛɪɴɢ ɴᴇxᴛ ϙᴜᴇᴜᴇᴅ ᴛᴀꜱᴋ...<b>", parse_mode=enums.ParseMode.HTML)
                     user_tasks[user_id]["active"] += 1
-                    print("Increased +1 Active Task")
                     next_task["status"] = "Processing"
                     await trigger_next_task(bot, user_id, next_task, smss)
-                    print(f"Triggered Next task to continue...... ")
             # Update the task status message
             await update_task_status_message(bot, user_id)
         except Exception as e:
             print(f"Error occ => {e}")
 
 async def trigger_next_task(bot, user_id, next_task, smss):
-    print("Initiating next task...")
     create_task(process_task(bot, user_id, next_task, smss))  # Start next task in background

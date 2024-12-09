@@ -1,4 +1,4 @@
-from pyrogram import Client 
+from pyrogram import Client, idle
 from config import API_ID, API_HASH, BOT_TOKEN, FORCE_SUB, PORT
 from aiohttp import web
 from route import web_server
@@ -38,7 +38,7 @@ class Bot(Client):
         bind_address = "0.0.0.0"       
         await web.TCPSite(app, bind_address, PORT).start()     
         print(f"{me.first_name} 𝚂𝚃𝙰𝚁𝚃𝙴𝙳 ⚡️⚡️⚡️")
-      
+        await idle()
 
     async def stop(self, *args):
         await super().stop()      

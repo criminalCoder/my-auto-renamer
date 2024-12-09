@@ -46,6 +46,45 @@ def get_manager():
     global handler
     return handler
 
+task_status_messages = {}  # {user_id: status_message_object}
+
+async def update_task_status_message(bot, user_id):
+    """Update the task status message for the user."""
+    if user_id not in user_tasks:
+        return  # No tasks to display for this user
+
+    # Get current task stats
+    active_count = user_tasks[user_id]["active"]
+    queue_count = user_tasks[user_id]["queue"].qsize()
+
+    # Build the status message
+    status_text = (
+        f"<blockquote>🛠 Task Status</blockquote>\n"
+        f"🚀 <b>Active Tasks</b>: <code>{active_count}</code>\n"
+        f"⏳ <b>In Queue</b>: <code>{queue_count}</code>\n"
+    )
+
+    # Check if a status message already exists
+    if user_id in task_status_messages:
+        try:
+            # Edit the existing message
+            await task_status_messages[user_id].edit_text(
+                text=status_text,
+                parse_mode=enums.ParseMode.HTML,
+            )
+        except Exception as e:
+            print(f"Failed to edit task status message: {e}")
+    else:
+        try:
+            # Send a new status message
+            status_message = await bot.send_message(
+                chat_id=user_id,  # Send directly to the user
+                text=status_text,
+                parse_mode=enums.ParseMode.HTML,
+            )
+            task_status_messages[user_id] = status_message
+        except Exception as e:
+            print(f"Failed to send new task status message: {e}")
 
 # @Client.on_callback_query(filters.regex("upload"))
 async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
@@ -76,6 +115,8 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, file, lazymsg):
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
                 create_task(process_task(bot, user_id, task_data, file, lazymsg))  # Start task in background
+        
+        await update_task_status_message(bot, user_id)
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
@@ -206,7 +247,7 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             if ph_path:
                 os.remove(ph_path)
 
-        if not await verify_forward_status(user_id):
+        if not await verify_forward_status():
             return await bot.send_message(user_id, f"Stop forward triggered, Happy renaming 🤞")
 
         try:
@@ -308,7 +349,10 @@ async def process_task(bot, user_id, task_data, file, lazymsg):
             user_tasks[user_id]["active"] -= 1
             if not user_tasks[user_id]["queue"].empty():
                 next_task = await user_tasks[user_id]["queue"].get()
-                
-                create_task(process_task(bot, user_id, next_task))  # Start next task in background
-                
                 user_tasks[user_id]["active"] += 1
+                await trigger_next_task(bot, user_id, next_task)
+        # Update the task status message
+        await update_task_status_message(bot, user_id)
+
+async def trigger_next_task(bot, user_id, next_task):
+    create_task(process_task(bot, user_id, next_task))  # Start next task in background

@@ -500,7 +500,6 @@ async def forward_status(client, message):
         await message.reply("<blockquote>⏳ sᴛᴀᴛᴜs => ɴᴏᴛ ꜰᴏᴜɴᴅ 💔</blockquote>\nɪ'ᴠᴇ ᴅᴇᴄɪᴅᴇᴅ ᴛᴏ ꜰᴏʀᴡᴀʀᴅ ʏᴏᴜ ᴀ ɴᴇᴡ ꜰɪʟᴇ ᴀꜰᴛᴇʀ ʀᴇɴᴀᴍɪɴɢ ᴇᴀᴄʜ ꜰɪʟᴇ", parse_mode=enums.ParseMode.HTML)
     return
 
-
 async def verify_forward_status(user_id: int):
     status = await db.get_forward_after_rename(user_id)
     

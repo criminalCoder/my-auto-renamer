@@ -15,6 +15,8 @@ from telethon.sessions import StringSession
 from plugins.lazydeveloper import verify_forward_status
 from asyncio import Lock, Queue, create_task
 import uuid
+import hashlib
+
 user_tasks = {}
 user_locks = {}
 
@@ -88,7 +90,66 @@ task_details = {}
 #         except Exception as e:
 #             print(f"Failed to send new task status message: {e}")
 
-@Client.on_message(filters.command("gettask"))
+@Client.on_message(filters.private & filters.command(["start"]))
+async def start(client, message):
+    user = message.from_user
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id)
+
+    # Handle deep-linked arguments
+    data = None
+    if len(message.command) > 1:
+        data = message.command[1]  # Extract the argument (e.g., task_id)
+
+    # Default bot introduction message
+    txt = (
+        f"👋 Hey {user.mention}\n"
+        "ɪ'ᴍ ᴀɴ ᴀᴅᴠᴀɴᴄᴇ ғɪʟᴇ ʀᴇɴᴀᴍᴇʀ + ғɪʟᴇ ᴛᴏ ᴠɪᴅᴇᴏ ᴄᴏɴᴠᴇʀᴛᴇʀ ʙᴏᴛ ᴡɪᴛʜ ᴘᴇʀᴍᴀɴᴇɴᴛ ᴛʜᴜᴍʙɴᴀɪʟ & ᴄᴜsᴛᴏᴍ ᴄᴀᴘᴛɪᴏɴ sᴜᴘᴘᴏʀᴛ!\n\n"
+        "♥ ʙᴇʟᴏᴠᴇᴅ ᴏᴡɴᴇʀ <a href='https://telegram.me/Simplifytuber2'>ʏᴀsʜ ɢᴏʏᴀʟ</a> 🍟"
+    )
+
+    # Check if deep-linked data exists
+    if data:
+        # Handle specific deep-link actions (e.g., task details)
+        if data.startswith("gettask_"):
+            task_id = data.split("_", 1)[1]
+            # Retrieve and display task details
+            task = task_details.get(task_id)
+            if task:
+                details_txt = (
+                    f"<b>Task Details</b>\n"
+                    f"🆔 <b>Task ID</b>: <code>{task['id']}</code>\n"
+                    f"📂 <b>Type</b>: {task['type']}\n"
+                    f"📄 <b>New Name</b>: {task['new_name']}\n"
+                    f"🔄 <b>Status</b>: {task['status']}\n"
+                )
+                await message.reply_text(details_txt, parse_mode=enums.ParseMode.HTML)
+            else:
+                await message.reply_text("❌ Task not found!", parse_mode=enums.ParseMode.HTML)
+            return
+
+    # Reply with the default bot introduction message
+    button = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("✿.｡:☆ ᴏᴡɴᴇʀ ⚔ ᴅᴇᴠs ☆:｡.✿", callback_data='dev')
+        ],
+        [
+            InlineKeyboardButton('📢 ᴜᴘᴅᴀᴛᴇs §', url='https://t.me/botupdatesimplifytuber'),
+            InlineKeyboardButton('🍂 sᴜᴘᴘᴏʀᴛ §', url='https://t.me/bysimplifytuber')
+        ],
+        [
+            InlineKeyboardButton('🍃 ᴀʙᴏᴜᴛ §', callback_data='about'),
+            InlineKeyboardButton('ℹ ʜᴇʟᴘ §', callback_data='help')
+        ]
+    ])
+
+    if START_PIC:
+        await message.reply_photo(START_PIC, caption=txt, reply_markup=button)
+    else:
+        await message.reply_text(text=txt, reply_markup=button, disable_web_page_preview=True)
+
+
+@Client.on_message(filters.private & filters.command("gettask"))
 async def get_task_details(bot, message):
     """Handle /gettask command."""
     try:
@@ -149,6 +210,11 @@ async def get_task_details(bot, message):
 #     except Exception as e:
 #         print(f"Failed to send new task status message: {e}")
 
+async def generate_short_task_id():
+    """Generate a hash-based unique short task ID."""
+    full_uuid = str(uuid.uuid4())
+    hash_object = hashlib.md5(full_uuid.encode())  # Use MD5 hashing
+    return hash_object.hexdigest()[:8]
 
 async def update_task_status_message(bot, user_id):
     """Send a detailed status message and delete the old one."""
@@ -161,22 +227,21 @@ async def update_task_status_message(bot, user_id):
     queue_count = len(queue)
 
     # Build the detailed status message
-    status_text = "<b>⏳ ALL QUEUED TASK 👇</b>\n"
-    status_text += "-------------------\n"
+    status_text = "<b>━━⏳ ᴛʜᴇ ᴛᴀꜱᴋ ᴍᴀɴᴀɢᴇʀ ⏳━━</b>\n"
+    status_text += "╭━━❰❤.<b>ʟᴀᴢʏᴅᴇᴠᴇʟᴏᴘᴇʀ</b>.❤❱━━➣\n"
 
     for index, task in enumerate(queue, start=1):
         task_id = task["id"]
         status_text += (
-            f"🤞 <b>TASK {index}</b> => <code>{task_id}</code>\n"
-            f"⚙ <a href='https://t.me/{bot.username}?start=gettask_{task_id}'>Get Details : Click Here</a>\n"
-            f"-------------------\n"
+            f"┣⪼🤞 <b>TASK {index}</b> => <code>{task_id}</code>\n"
+            f"┣⪼⚙ <a href='https://t.me/{bot.username}?start=gettask_{task_id}'>Get Details : Click Here</a>\n"
+            f"┣━━━━━━━━━━━━━━━━━━━➣ \n"
         )
 
     # Add summary of active and queued tasks
     status_text += (
-        f"\n<b>Active Tasks</b>: <code>{active_count}</code> | "
-        f"<b>In Queue</b>: <code>{queue_count}</code>\n"
-        "____________________"
+        f"┣<b>Active Tasks</b>: <code>{active_count}</code> | <b>In Queue</b>: <code>{queue_count}</code>\n"
+        "╰━━━━━━━━━━━━━━━━━━━➣"
     )
 
     # Delete the previous status message if it exists
@@ -211,7 +276,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
             }
             user_locks[user_id] = Lock()  # Lock for managing task execution
         
-        task_id = str(uuid.uuid4())
+        task_id = await generate_short_task_id()
         
         task_data = {
             "id":task_id,

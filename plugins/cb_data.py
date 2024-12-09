@@ -14,6 +14,7 @@ from telethon import TelegramClient
 from telethon.sessions import StringSession
 from plugins.lazydeveloper import verify_forward_status
 from asyncio import Lock, Queue, create_task
+import uuid
 user_tasks = {}
 user_locks = {}
 
@@ -47,44 +48,155 @@ def get_manager():
     return handler
 
 task_status_messages = {}  # {user_id: status_message_object}
+task_details = {} 
+
+# async def update_task_status_message(bot, user_id):
+#     """Update the task status message for the user."""
+#     if user_id not in user_tasks:
+#         return  # No tasks to display for this user
+
+#     # Get current task stats
+#     active_count = user_tasks[user_id]["active"]
+#     queue_count = user_tasks[user_id]["queue"].qsize()
+
+#     # Build the status message
+#     status_text = (
+#         f"<blockquote>🛠 Task Status</blockquote>\n"
+#         f"🚀 <b>Active Tasks</b>: <code>{active_count}</code>\n"
+#         f"⏳ <b>In Queue</b>: <code>{queue_count}</code>\n"
+#     )
+
+#     # Check if a status message already exists
+#     if user_id in task_status_messages:
+#         try:
+#             # Edit the existing message
+#             await task_status_messages[user_id].edit_text(
+#                 text=status_text,
+#                 parse_mode=enums.ParseMode.HTML,
+#             )
+#         except Exception as e:
+#             print(f"Failed to edit task status message: {e}")
+#     else:
+#         try:
+#             # Send a new status message
+#             status_message = await bot.send_message(
+#                 chat_id=user_id,  # Send directly to the user
+#                 text=status_text,
+#                 parse_mode=enums.ParseMode.HTML,
+#             )
+#             task_status_messages[user_id] = status_message
+#         except Exception as e:
+#             print(f"Failed to send new task status message: {e}")
+
+@Client.on_message(filters.command("gettask"))
+async def get_task_details(bot, message):
+    """Handle /gettask command."""
+    try:
+        user_id = message.from_user.id
+        if len(message.command) < 2:
+            await message.reply("❗ Usage: /gettask <task_id>")
+            return
+
+        task_id = message.command[1]
+        if task_id not in task_details:
+            await message.reply(f"❌ Task with ID <code>{task_id}</code> not found!", parse_mode=enums.ParseMode.HTML)
+            return
+
+        task_data = task_details[task_id]
+        status_text = (
+            f"<blockquote>🤞 Task Details ⏳< blockquote>\n"
+            f"🆔 <b>Task ID</b>: <code>{task_data['id']}</code>\n"
+            f"📂 <b>Type</b>: {task_data['type']}\n"
+            f"📄 <b>New Name</b>: {task_data['new_name']}\n"
+            f"🔄 <b>Status</b>: {task_data['status']}\n"
+        )
+        await message.reply(status_text, parse_mode=enums.ParseMode.HTML)
+    except Exception as e:
+        print(f"Error in get_task_details: {e}")
+
+# async def update_task_status_message(bot, user_id):
+#     """Send a new status message and delete the old one."""
+#     if user_id not in user_tasks:
+#         return  # No tasks for this user
+
+#     # Fetch current task stats
+#     active_count = user_tasks[user_id]["active"]
+#     queue_count = user_tasks[user_id]["queue"].qsize()
+
+#     # Build the status message
+#     status_text = (
+#         f"<blockquote>🛠 Task Status</blockquote>\n"
+#         f"🚀 <b>Active Tasks</b>: <code>{active_count}</code>\n"
+#         f"⏳ <b>In Queue</b>: <code>{queue_count}</code>\n"
+#     )
+
+#     # Send the new status message
+#     try:
+#         # Delete the previous status message if it exists
+#         if user_id in task_status_messages:
+#             try:
+#                 await task_status_messages[user_id].delete()
+#             except Exception as e:
+#                 print(f"Failed to delete previous status message: {e}")
+
+#         # Send a new status message and save its reference
+#         new_status_message = await bot.send_message(
+#             chat_id=user_id,
+#             text=status_text,
+#             parse_mode=enums.ParseMode.HTML,
+#         )
+#         task_status_messages[user_id] = new_status_message
+#     except Exception as e:
+#         print(f"Failed to send new task status message: {e}")
+
 
 async def update_task_status_message(bot, user_id):
-    """Update the task status message for the user."""
+    """Send a detailed status message and delete the old one."""
     if user_id not in user_tasks:
-        return  # No tasks to display for this user
+        return  # No tasks for this user
 
-    # Get current task stats
+    # Fetch current task stats
     active_count = user_tasks[user_id]["active"]
-    queue_count = user_tasks[user_id]["queue"].qsize()
+    queue = list(user_tasks[user_id]["queue"]._queue)  # Extract queued tasks
+    queue_count = len(queue)
 
-    # Build the status message
-    status_text = (
-        f"<blockquote>🛠 Task Status</blockquote>\n"
-        f"🚀 <b>Active Tasks</b>: <code>{active_count}</code>\n"
-        f"⏳ <b>In Queue</b>: <code>{queue_count}</code>\n"
+    # Build the detailed status message
+    status_text = "<b>⏳ ALL QUEUED TASK 👇</b>\n"
+    status_text += "-------------------\n"
+
+    for index, task in enumerate(queue, start=1):
+        task_id = task["id"]
+        status_text += (
+            f"🤞 <b>TASK {index}</b> => <code>{task_id}</code>\n"
+            f"⚙ <a href='https://t.me/{bot.username}?start=gettask_{task_id}'>Get Details : Click Here</a>\n"
+            f"-------------------\n"
+        )
+
+    # Add summary of active and queued tasks
+    status_text += (
+        f"\n<b>Active Tasks</b>: <code>{active_count}</code> | "
+        f"<b>In Queue</b>: <code>{queue_count}</code>\n"
+        "____________________"
     )
 
-    # Check if a status message already exists
+    # Delete the previous status message if it exists
     if user_id in task_status_messages:
         try:
-            # Edit the existing message
-            await task_status_messages[user_id].edit_text(
-                text=status_text,
-                parse_mode=enums.ParseMode.HTML,
-            )
+            await task_status_messages[user_id].delete()
         except Exception as e:
-            print(f"Failed to edit task status message: {e}")
-    else:
-        try:
-            # Send a new status message
-            status_message = await bot.send_message(
-                chat_id=user_id,  # Send directly to the user
-                text=status_text,
-                parse_mode=enums.ParseMode.HTML,
-            )
-            task_status_messages[user_id] = status_message
-        except Exception as e:
-            print(f"Failed to send new task status message: {e}")
+            print(f"Failed to delete previous status message: {e}")
+
+    # Send a new detailed status message and save its reference
+    try:
+        new_status_message = await bot.send_message(
+            chat_id=user_id,
+            text=status_text,
+            parse_mode=enums.ParseMode.HTML,
+            disable_web_page_preview=True,
+        )
+        task_status_messages[user_id] = new_status_message
+    except Exception as e:
+        print(f"Failed to send new task status message: {e}")
 
 # @Client.on_callback_query(filters.regex("upload"))
 async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
@@ -98,25 +210,32 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
                 "queue": Queue(),  # Pending tasks queue
             }
             user_locks[user_id] = Lock()  # Lock for managing task execution
-
+        
+        task_id = str(uuid.uuid4())
+        
         task_data = {
+            "id":task_id,
             "update": message,
             "type": "document",
             "new_name": new_file_name,
+            "status": "Pending",
         }
-
+        task_details[task_id] = task_data 
         # Manage task execution
         async with user_locks[user_id]:
             if user_tasks[user_id]["active"] >= MAX_ACTIVE_TASKS:
                 # Add task to queue
                 await user_tasks[user_id]["queue"].put(task_data)
-                await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
+                task_data["status"] = "Queued"
+                sweetreply = await lazymsg.edit("<b>🔄 ᴛᴀsᴋ ɪs ɪɴ ᴛʜᴇ qᴜᴇᴜᴇ. ɪᴛ ᴡɪʟʟ sᴛᴀʀᴛ sᴏᴏɴ. ⏳</b>")
             else:
                 # Increment active tasks and process immediately
                 user_tasks[user_id]["active"] += 1
+                task_data["status"] = "Processing"
                 create_task(process_task(bot, user_id, task_data, lazymsg))  # Start task in background
         
         await update_task_status_message(bot, user_id)
+        await sweetreply.delete()
     except Exception as e:
         print(f"Error in lazydevelopertaskmanager: {e}")
 
@@ -124,6 +243,8 @@ async def process_task(bot, user_id, task_data, lazymsg):
     try:
         update = task_data["update"]
         new_name = task_data["new_name"]
+        task_id = task_data["id"]
+        task_details[task_id]["status"] = "Processing"
         # print(f"task for user id {update.from_user.id}")
         manager(user_id, True)
         type = task_data["type"]
@@ -341,6 +462,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
 
     except Exception as lazydeveloperr:
         print(lazydeveloperr)
+        task_details[task_id]["status"] = "Failed"
     finally:
         print(f"Finally block is being called")
         # Decrement active task count and process next task from queue
@@ -354,6 +476,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
                     print(f"Got Next task=> {next_task}")
                     user_tasks[user_id]["active"] += 1
                     print("Increased +1 Active Task")
+                    next_task["status"] = "Processing"
                     await trigger_next_task(bot, user_id, next_task, smss)
                     print(f"Triggered Next task to continue...... ")
             # Update the task status message

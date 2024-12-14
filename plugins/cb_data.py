@@ -229,10 +229,10 @@ async def update_task_status_message(bot, user_id):
     # Build the detailed status message
     status_text = "<blockquote><b>🥂🍟⏳ ᴛʜᴇ ᴛᴀꜱᴋ ᴍᴀɴᴀɢᴇʀ ⏳🍟🥂</b></blockquote>\n"
     status_text += "╭━━❰❤.<b>ʟᴀᴢʏᴅᴇᴠᴇʟᴏᴘᴇʀ</b>.❤❱━━➣\n"
-
+    await asyncio.sleep(2)
     for index, task in enumerate(queue, start=1):
         task_id = task["id"]
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         status_text += (
             f"┣⪼🍿 <b>ᴛᴀꜱᴋ {index}</b> ➣ <code>{task_id}</code>\n"
             f"┣⪼⚙ <b><a href='https://t.me/{bot.username}?start=gettask_{task_id}'>ɢᴇᴛ ᴅᴇᴛᴀɪʟꜱ : ᴄʟɪᴄᴋ ʜᴇʀᴇ</a></b>\n"
@@ -247,6 +247,7 @@ async def update_task_status_message(bot, user_id):
     )
 
     # Delete the previous status message if it exists
+    await asyncio.sleep(1)
     if user_id in task_status_messages:
         try:
             await task_status_messages[user_id].delete()
@@ -254,10 +255,11 @@ async def update_task_status_message(bot, user_id):
             print(f"Failed to delete previous status message: {e}")
 
     # Send a new detailed status message and save its reference
+    await asyncio.sleep(1)
     try:
         new_status_message = await bot.send_message(
             chat_id=user_id,
-            text=status_text,
+            text=f"{status_text}\n\n🍟" ,
             parse_mode=enums.ParseMode.HTML,
             disable_web_page_preview=True,
         )
@@ -283,7 +285,7 @@ async def lazydevelopertaskmanager(bot, message, new_file_name, lazymsg):
         task_data = {
             "id":task_id,
             "update": message,
-            "type": "document",
+            "type": "video",
             "new_name": new_file_name,
             "status": "Pending",
         }
@@ -324,7 +326,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
             print("No media found to preocess...")
             # return await update.reply("No media file found to process.")
         try:
-            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"ᴅᴏᴡɴʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss...\n\n{new_filename}", lazymsg, c_time))
+            path = await update.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=(f"🔥 ᴅᴏᴡɴʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss...\n<blockquote>{new_filename}</blockquote>", lazymsg, c_time))
             # print(f"download completed |=> 🤞")
         except Exception as e:
             return await lazymsg.edit(e)
@@ -405,7 +407,7 @@ async def process_task(bot, user_id, task_data, lazymsg):
                     thumb=ph_path,
                     duration=duration,
                     progress=progress_for_pyrogram,
-                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀", lazymsg, c_time)
+                    progress_args=("⏳ ᴜᴘʟᴏᴀᴅ ɪɴ ᴘʀᴏɢʀᴇss... 🚀\n<blockquote>{new_filename}</blockquote>", lazymsg, c_time)
                 )
             elif type == "audio":
                 suc = await bot.send_audio(
